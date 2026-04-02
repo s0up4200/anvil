@@ -31,6 +31,16 @@ export default function App() {
   useKeyboard()
   useUpdateChecker()
 
+  // Disable default browser context menu unless inside a Radix ContextMenuTrigger
+  useEffect(() => {
+    function block(e: MouseEvent) {
+      if ((e.target as HTMLElement).closest('[data-slot="context-menu-trigger"]')) return
+      e.preventDefault()
+    }
+    window.addEventListener("contextmenu", block)
+    return () => window.removeEventListener("contextmenu", block)
+  }, [])
+
   // Apply theme class to <html>
   useEffect(() => {
     const isDark = resolveTheme(theme) === "dark"
