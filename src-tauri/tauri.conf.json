@@ -2,7 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/nickel-org/nickel.rs/master/src/static_files/tauri-conf-schema.json",
   "productName": "Anvil",
   "version": "0.1.0",
-  "identifier": "dev.anvil.app",
+  "identifier": "dev.anvil.desktop",
   "build": {
     "beforeDevCommand": "bun run dev",
     "beforeBuildCommand": "bun run build",

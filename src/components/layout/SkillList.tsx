@@ -105,7 +105,7 @@ export function SkillList() {
         {!isLoading &&
           skills.map((skill) => (
             <ContextMenu key={skill.id}>
-              <ContextMenuTrigger asChild>
+              <ContextMenuTrigger>
                 <button
                   type="button"
                   onClick={() => setSelectedSkillId(skill.id)}
