@@ -1,0 +1,36 @@
+use serde::Serialize;
+use thiserror::Error;
+
+#[derive(Debug, Error, Serialize)]
+#[serde(tag = "kind", content = "message", rename_all = "camelCase")]
+pub enum AppError {
+    #[error("I/O error: {0}")]
+    Io(String),
+
+    #[error("YAML parse error: {0}")]
+    YamlParse(String),
+
+    #[error("JSON error: {0}")]
+    Json(String),
+
+    #[error("Path error: {0}")]
+    Path(String),
+
+    #[error("Not found: {0}")]
+    NotFound(String),
+
+    #[error("Invalid input: {0}")]
+    InvalidInput(String),
+}
+
+impl From<std::io::Error> for AppError {
+    fn from(e: std::io::Error) -> Self {
+        AppError::Io(e.to_string())
+    }
+}
+
+impl From<serde_json::Error> for AppError {
+    fn from(e: serde_json::Error) -> Self {
+        AppError::Json(e.to_string())
+    }
+}
