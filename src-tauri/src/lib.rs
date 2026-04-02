@@ -1,3 +1,4 @@
+pub mod commands;
 pub mod error;
 pub mod models;
 pub mod services;
@@ -6,6 +7,11 @@ pub mod services;
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .invoke_handler(tauri::generate_handler![
+            commands::agents::detect_agents,
+            commands::settings::get_config,
+            commands::settings::save_config,
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
