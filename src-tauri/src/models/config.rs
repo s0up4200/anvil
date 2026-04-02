@@ -36,6 +36,26 @@ pub struct AppConfig {
     /// Whether to show hidden files (names starting with `.`) in skill lists.
     #[serde(default)]
     pub show_hidden: bool,
+
+    /// UI theme preference: "dark", "light", or "system".
+    #[serde(default = "default_theme")]
+    pub theme: String,
+
+    /// Default scope for new skills: "global" or "project".
+    #[serde(default = "default_scope")]
+    pub default_scope: String,
+
+    /// Whether to show a confirmation dialog before deleting a skill.
+    #[serde(default = "default_true")]
+    pub confirm_before_delete: bool,
+}
+
+fn default_scope() -> String {
+    "global".to_string()
+}
+
+fn default_theme() -> String {
+    "system".to_string()
 }
 
 fn default_true() -> bool {
@@ -49,6 +69,9 @@ impl Default for AppConfig {
             follow_symlinks: true,
             vault_path: None,
             show_hidden: false,
+            theme: default_theme(),
+            default_scope: default_scope(),
+            confirm_before_delete: true,
         }
     }
 }
@@ -73,6 +96,9 @@ mod tests {
         assert!(cfg.follow_symlinks);
         assert!(!cfg.show_hidden);
         assert!(cfg.vault_path.is_none());
+        assert_eq!(cfg.theme, "system");
+        assert_eq!(cfg.default_scope, "global");
+        assert!(cfg.confirm_before_delete);
     }
 
     #[test]
@@ -86,6 +112,9 @@ mod tests {
             follow_symlinks: false,
             vault_path: Some(PathBuf::from("/my/vault")),
             show_hidden: true,
+            theme: "dark".to_string(),
+            default_scope: "project".to_string(),
+            confirm_before_delete: false,
         };
 
         let json = serde_json::to_string(&cfg).expect("serialize");
@@ -94,6 +123,9 @@ mod tests {
         assert_eq!(cfg.follow_symlinks, cfg2.follow_symlinks);
         assert_eq!(cfg.show_hidden, cfg2.show_hidden);
         assert_eq!(cfg.vault_path, cfg2.vault_path);
+        assert_eq!(cfg.theme, cfg2.theme);
+        assert_eq!(cfg.default_scope, cfg2.default_scope);
+        assert_eq!(cfg.confirm_before_delete, cfg2.confirm_before_delete);
         assert_eq!(cfg.custom_agents.len(), cfg2.custom_agents.len());
         assert_eq!(cfg.custom_agents[0].id, cfg2.custom_agents[0].id);
     }
@@ -103,6 +135,7 @@ mod tests {
         let cfg = AppConfig {
             follow_symlinks: false,
             show_hidden: true,
+            theme: "dark".to_string(),
             ..Default::default()
         };
         let json = serde_json::to_value(&cfg).unwrap();

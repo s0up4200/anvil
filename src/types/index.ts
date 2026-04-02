@@ -81,6 +81,9 @@ export interface AppConfig {
   followSymlinks: boolean;
   vaultPath: string | null;
   showHidden: boolean;
+  theme: string;
+  defaultScope: string;
+  confirmBeforeDelete: boolean;
 }
 
 // ---------------------------------------------------------------------------

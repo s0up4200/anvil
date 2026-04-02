@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useCallback, useState } from "react"
 import { Search } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -9,11 +9,21 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { InstallDialog } from "@/components/skills/InstallDialog"
 import { useSkillStore } from "@/stores/skillStore"
 import { useUpdateStore } from "@/stores/updateStore"
 import { useSkills } from "@/hooks/useSkills"
-import { deleteSkill, duplicateSkill, toggleSkill } from "@/lib/tauri"
+import { deleteSkill, duplicateSkill, getConfig, toggleSkill } from "@/lib/tauri"
 import { getAgentColor } from "@/lib/constants"
 import { cn } from "@/lib/utils"
 import type { Skill } from "@/types"
@@ -26,18 +36,30 @@ export function SkillList() {
 
   const [installDialogOpen, setInstallDialogOpen] = useState(false)
   const [installTarget, setInstallTarget] = useState<Skill | null>(null)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<Skill | null>(null)
 
   function handleOpenInstall(skill: Skill) {
     setInstallTarget(skill)
     setInstallDialogOpen(true)
   }
 
-  async function handleDelete(skill: Skill) {
+  const doDelete = useCallback(async (skill: Skill) => {
     try {
       await deleteSkill(skill.path)
       removeSkill(skill.id)
     } catch (err) {
       console.error("Failed to delete skill:", err)
+    }
+  }, [removeSkill])
+
+  async function handleDelete(skill: Skill) {
+    const cfg = await getConfig().catch(() => null)
+    if (cfg?.confirmBeforeDelete !== false) {
+      setDeleteTarget(skill)
+      setDeleteDialogOpen(true)
+    } else {
+      await doDelete(skill)
     }
   }
 
@@ -189,6 +211,28 @@ export function SkillList() {
         skill={installTarget}
         onInstalled={refetch}
       />
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete skill</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete &ldquo;{deleteTarget?.name}&rdquo;? This will move it to the trash.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (deleteTarget) void doDelete(deleteTarget)
+                setDeleteDialogOpen(false)
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

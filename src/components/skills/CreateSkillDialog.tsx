@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { useAgentStore } from "@/stores/agentStore"
-import { createSkill } from "@/lib/tauri"
+import { createSkill, getConfig } from "@/lib/tauri"
 import { getAgentDisplayName } from "@/lib/constants"
 import { getErrorMessage } from "@/lib/utils"
 
@@ -34,8 +34,17 @@ export function CreateSkillDialog({
   const [selectedAgentId, setSelectedAgentId] = useState<string>(
     detectedAgents[0]?.id ?? ""
   )
+  const [scope, setScope] = useState("global")
   const [isCreating, setIsCreating] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Load default scope from config when dialog opens
+  useEffect(() => {
+    if (!open) return
+    getConfig().then((cfg) => {
+      if (cfg.defaultScope) setScope(cfg.defaultScope)
+    }).catch(() => {})
+  }, [open])
 
   const slug = name.trim().toLowerCase().replace(/\s+/g, "-")
   const isSlugValid = slug === "" || SLUG_RE.test(slug)
@@ -66,7 +75,7 @@ export function CreateSkillDialog({
         description: description.trim(),
         body: "",
         agentPath: selectedAgent.skillsPath,
-        scope: "global",
+        scope,
       })
       reset()
       onOpenChange(false)

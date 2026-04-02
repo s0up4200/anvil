@@ -25,6 +25,9 @@ const DEFAULT_CONFIG: AppConfig = {
   followSymlinks: true,
   vaultPath: null,
   showHidden: false,
+  theme: "system",
+  defaultScope: "global",
+  confirmBeforeDelete: true,
 }
 
 export function SettingsView() {
@@ -77,6 +80,7 @@ export function SettingsView() {
         <Tabs defaultValue="appearance">
           <TabsList>
             <TabsTrigger value="appearance">Appearance</TabsTrigger>
+            <TabsTrigger value="behavior">Behavior</TabsTrigger>
             <TabsTrigger value="agents">Agents</TabsTrigger>
           </TabsList>
 
@@ -92,7 +96,11 @@ export function SettingsView() {
                       key={t}
                       variant={theme === t ? "default" : "outline"}
                       size="sm"
-                      onClick={() => setTheme(t)}
+                      onClick={() => {
+                        setTheme(t)
+                        setConfig((prev) => ({ ...prev, theme: t }))
+                        void saveConfig({ ...config, theme: t })
+                      }}
                       className="capitalize"
                     >
                       {t}
@@ -100,6 +108,52 @@ export function SettingsView() {
                   ))}
                 </div>
               </div>
+            </div>
+          </TabsContent>
+
+          {/* Behavior tab */}
+          <TabsContent value="behavior">
+            <div className="flex flex-col gap-4 pt-2">
+              {/* Default scope */}
+              <div className="flex flex-col gap-1.5">
+                <p className="text-xs font-medium text-foreground">Default scope</p>
+                <select
+                  value={config.defaultScope}
+                  onChange={(e) => {
+                    const next = { ...config, defaultScope: e.target.value }
+                    setConfig(next)
+                    void saveConfig(next)
+                  }}
+                  className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
+                >
+                  <option value="global">Global</option>
+                  <option value="project">Project</option>
+                </select>
+              </div>
+
+              {/* Confirm before delete */}
+              <label className="flex items-center justify-between gap-3">
+                <span className="text-xs font-medium text-foreground">Confirm before delete</span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={config.confirmBeforeDelete}
+                  onClick={() => {
+                    const next = { ...config, confirmBeforeDelete: !config.confirmBeforeDelete }
+                    setConfig(next)
+                    void saveConfig(next)
+                  }}
+                  className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full transition-colors ${
+                    config.confirmBeforeDelete ? "bg-primary" : "bg-input"
+                  }`}
+                >
+                  <span
+                    className={`pointer-events-none block size-4 rounded-full bg-background shadow-sm transition-transform ${
+                      config.confirmBeforeDelete ? "translate-x-4" : "translate-x-0.5"
+                    }`}
+                  />
+                </button>
+              </label>
             </div>
           </TabsContent>
 

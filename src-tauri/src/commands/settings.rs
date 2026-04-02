@@ -12,6 +12,24 @@ fn config_path() -> Result<std::path::PathBuf, AppError> {
     Ok(home.join(".anvil").join("config.json"))
 }
 
+/// Loads config from disk without requiring Tauri context.
+/// Returns `AppConfig::default()` when the file doesn't exist.
+pub fn load_config_from_disk() -> AppConfig {
+    let path = match config_path() {
+        Ok(p) => p,
+        Err(_) => return AppConfig::default(),
+    };
+
+    if !path.exists() {
+        return AppConfig::default();
+    }
+
+    match std::fs::read_to_string(&path) {
+        Ok(contents) => serde_json::from_str(&contents).unwrap_or_default(),
+        Err(_) => AppConfig::default(),
+    }
+}
+
 /// Reads `~/.anvil/config.json` and returns the parsed [`AppConfig`].
 /// Returns [`AppConfig::default()`] when the file does not exist.
 #[tauri::command]

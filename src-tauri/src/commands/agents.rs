@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 
+use crate::commands::settings::load_config_from_disk;
 use crate::models::agent::{known_agents, Agent};
 
 /// An `Agent` augmented with a runtime `detected` flag indicating whether its
@@ -21,7 +22,7 @@ pub struct DetectedAgent {
 pub fn detect_agents() -> Result<Vec<DetectedAgent>, String> {
     let agents = known_agents();
 
-    let result = agents
+    let mut result: Vec<DetectedAgent> = agents
         .into_iter()
         .map(|agent| {
             let detected = agent
@@ -32,6 +33,20 @@ pub fn detect_agents() -> Result<Vec<DetectedAgent>, String> {
             DetectedAgent { agent, detected }
         })
         .collect();
+
+    // Append custom agents from config
+    let config = load_config_from_disk();
+    for ca in config.custom_agents {
+        let detected = ca.skills_path.exists();
+        result.push(DetectedAgent {
+            agent: Agent {
+                id: ca.id,
+                name: ca.name,
+                skills_path: Some(ca.skills_path),
+            },
+            detected,
+        });
+    }
 
     Ok(result)
 }

@@ -12,12 +12,20 @@ import { useSkills } from "@/hooks/useSkills"
 import { useFileWatcher } from "@/hooks/useFileWatcher"
 import { useKeyboard } from "@/hooks/useKeyboard"
 import { useUpdateChecker } from "@/hooks/useUpdateChecker"
-import { useUIStore } from "@/stores/uiStore"
+import { useUIStore, type Theme } from "@/stores/uiStore"
+import { getConfig } from "@/lib/tauri"
 import { resolveTheme } from "@/lib/utils"
 
 export default function App() {
-  const { theme, activeView, createDialogOpen, setCreateDialogOpen } = useUIStore()
+  const { theme, setTheme, activeView, createDialogOpen, setCreateDialogOpen } = useUIStore()
   useAgents()
+
+  // Hydrate theme from persisted config on mount
+  useEffect(() => {
+    getConfig().then((cfg) => {
+      if (cfg.theme) setTheme(cfg.theme as Theme)
+    }).catch(() => {})
+  }, [setTheme])
   const { refetch } = useSkills()
   useFileWatcher(refetch)
   useKeyboard()

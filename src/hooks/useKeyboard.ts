@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useUIStore } from "@/stores/uiStore";
 import { useSkillStore } from "@/stores/skillStore";
+import { deleteSkill, duplicateSkill } from "@/lib/tauri";
 
 /**
  * Registers global keyboard shortcuts:
@@ -10,7 +11,7 @@ import { useSkillStore } from "@/stores/skillStore";
  */
 export function useKeyboard(): void {
   const { setCommandPaletteOpen, setSettingsOpen, setCreateDialogOpen } = useUIStore();
-  const { skills, selectedSkillId, setSelectedSkillId } = useSkillStore();
+  const { skills, selectedSkillId, setSelectedSkillId, removeSkill } = useSkillStore();
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent): void {
@@ -46,6 +47,58 @@ export function useKeyboard(): void {
         return;
       }
 
+      if (meta && e.key === "d") {
+        e.preventDefault();
+        if (!selectedSkillId) return;
+        const skill = skills.find((s) => s.id === selectedSkillId);
+        if (skill) duplicateSkill(skill.path);
+        return;
+      }
+
+      if (meta && e.key === "Backspace") {
+        e.preventDefault();
+        if (
+          useUIStore.getState().commandPaletteOpen ||
+          useUIStore.getState().settingsOpen ||
+          useUIStore.getState().createDialogOpen
+        )
+          return;
+        if (!selectedSkillId) return;
+        const skill = skills.find((s) => s.id === selectedSkillId);
+        if (skill) {
+          deleteSkill(skill.path);
+          removeSkill(skill.id);
+        }
+        return;
+      }
+
+      if (e.key === "Escape") {
+        if (useUIStore.getState().commandPaletteOpen) {
+          setCommandPaletteOpen(false);
+        } else if (useUIStore.getState().settingsOpen) {
+          setSettingsOpen(false);
+        } else if (useUIStore.getState().createDialogOpen) {
+          setCreateDialogOpen(false);
+        } else {
+          setSelectedSkillId(null);
+        }
+        return;
+      }
+
+      if (e.key === "Enter") {
+        if (
+          useUIStore.getState().commandPaletteOpen ||
+          useUIStore.getState().settingsOpen ||
+          useUIStore.getState().createDialogOpen
+        )
+          return;
+        if (!selectedSkillId) return;
+        if (useUIStore.getState().activeView !== "skills") {
+          useUIStore.getState().setActiveView("skills");
+        }
+        return;
+      }
+
       // Arrow key navigation through the skill list.
       if (e.key === "ArrowDown" || e.key === "ArrowUp") {
         if (skills.length === 0) return;
@@ -78,5 +131,6 @@ export function useKeyboard(): void {
     skills,
     selectedSkillId,
     setSelectedSkillId,
+    removeSkill,
   ]);
 }
