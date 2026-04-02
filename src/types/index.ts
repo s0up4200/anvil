@@ -1,0 +1,93 @@
+// TypeScript interfaces mirroring Rust models.
+// Field names match the camelCase serialization from the Rust backend.
+
+// ---------------------------------------------------------------------------
+// Agent
+// ---------------------------------------------------------------------------
+
+/**
+ * A fully-resolved agent as returned by `detect_agents`.
+ * The Rust `DetectedAgent` flattens `Agent` + adds `detected`.
+ */
+export interface Agent {
+  id: string;
+  name: string;
+  /** Absolute path to the agent's skills directory. Null when home dir cannot be resolved. */
+  skillsPath: string | null;
+  /** Whether the skills directory currently exists on disk. */
+  detected: boolean;
+}
+
+// ---------------------------------------------------------------------------
+// Skill
+// ---------------------------------------------------------------------------
+
+export type SkillScope = "global" | "project";
+export type SkillSource = "native" | "symlink" | "vault";
+
+/**
+ * Parsed YAML frontmatter from a SKILL.md file.
+ * All fields are optional because user-authored files may omit any of them.
+ */
+export interface SkillFrontmatter {
+  description?: string;
+  userInvocable?: boolean;
+  argumentHint?: string;
+  allowedTools?: string[];
+  /** Catch-all for any other frontmatter keys. */
+  [key: string]: unknown;
+}
+
+/**
+ * A fully-resolved skill as returned by `scan_all_skills`.
+ */
+export interface Skill {
+  id: string;
+  name: string;
+  /** Absolute path to the skill file on disk. */
+  path: string;
+  /** Canonical (symlink-resolved) path used for deduplication. */
+  resolvedPath: string;
+  /** All agent IDs that reference this skill. */
+  agentIds: string[];
+  /** Parsed frontmatter, if present. */
+  frontmatter: SkillFrontmatter | null;
+  /** Raw markdown body (everything after the frontmatter delimiter). */
+  body: string;
+  /** Full raw file content. */
+  raw: string;
+  scope: SkillScope;
+  source: SkillSource;
+  isEnabled: boolean;
+  isInternal: boolean;
+  /** ISO-8601 timestamp of last modification. */
+  lastModified: string;
+  fileSize: number;
+  lineCount: number;
+}
+
+// ---------------------------------------------------------------------------
+// Config
+// ---------------------------------------------------------------------------
+
+export interface CustomAgent {
+  id: string;
+  name: string;
+  skillsPath: string;
+}
+
+export interface AppConfig {
+  customAgents: CustomAgent[];
+  followSymlinks: boolean;
+  vaultPath: string | null;
+  showHidden: boolean;
+}
+
+// ---------------------------------------------------------------------------
+// File watcher event
+// ---------------------------------------------------------------------------
+
+export interface SkillChangeEvent {
+  path: string;
+  eventType: string;
+}
