@@ -10,6 +10,8 @@ interface SkillEditorProps {
   onChange: (value: string) => void
   /** Optional: make the editor read-only */
   readOnly?: boolean
+  /** CodeMirror theme — "dark" or "light" */
+  theme?: "dark" | "light"
 }
 
 const extensions = [
@@ -19,13 +21,14 @@ const extensions = [
   search({ top: true }),
 ]
 
-export function SkillEditor({ value, onChange, readOnly = false }: SkillEditorProps) {
+export function SkillEditor({ value, onChange, readOnly = false, theme = "dark" }: SkillEditorProps) {
   return (
     <CodeMirror
       value={value}
       onChange={onChange}
       extensions={extensions}
       readOnly={readOnly}
+      theme={theme}
       basicSetup={{
         lineNumbers: false, // We add lineNumbers() manually above
         foldGutter: true,

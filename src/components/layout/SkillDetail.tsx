@@ -4,11 +4,20 @@ import { Button } from "@/components/ui/button"
 import { FrontmatterForm } from "@/components/editor/FrontmatterForm"
 import { SkillEditor } from "@/components/editor/SkillEditor"
 import { useSkillStore } from "@/stores/skillStore"
+import { useUIStore } from "@/stores/uiStore"
 import { getSkill, updateSkill } from "@/lib/tauri"
 import type { SkillFrontmatter } from "@/types"
 
 export function SkillDetail() {
   const { skills, selectedSkillId } = useSkillStore()
+  const storeTheme = useUIStore((s) => s.theme)
+
+  const resolvedTheme: "dark" | "light" =
+    storeTheme === "system"
+      ? window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light"
+      : storeTheme
 
   const selectedSkill = skills.find((s) => s.id === selectedSkillId) ?? null
 
@@ -136,7 +145,7 @@ export function SkillDetail() {
         <div className="mx-4 mb-2 border-t border-border" />
 
         <div className="flex-1 overflow-auto">
-          <SkillEditor value={body} onChange={setBody} />
+          <SkillEditor value={body} onChange={setBody} theme={resolvedTheme} />
         </div>
       </div>
     </div>
