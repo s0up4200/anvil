@@ -3,6 +3,8 @@ import { Sidebar } from "@/components/layout/Sidebar"
 import { SkillList } from "@/components/layout/SkillList"
 import { SkillDetail } from "@/components/layout/SkillDetail"
 import { CommandPalette } from "@/components/layout/CommandPalette"
+import { CreateSkillDialog } from "@/components/skills/CreateSkillDialog"
+import { SettingsView } from "@/components/settings/SettingsView"
 import { useAgents } from "@/hooks/useAgents"
 import { useSkills } from "@/hooks/useSkills"
 import { useFileWatcher } from "@/hooks/useFileWatcher"
@@ -10,7 +12,7 @@ import { useKeyboard } from "@/hooks/useKeyboard"
 import { useUIStore } from "@/stores/uiStore"
 
 export default function App() {
-  const { theme } = useUIStore()
+  const { theme, createDialogOpen, setCreateDialogOpen } = useUIStore()
   useAgents()
   const { refetch } = useSkills()
   useFileWatcher(refetch)
@@ -36,6 +38,12 @@ export default function App() {
       <SkillList />
       <SkillDetail />
       <CommandPalette />
+      <CreateSkillDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        onCreated={refetch}
+      />
+      <SettingsView />
     </div>
   )
 }

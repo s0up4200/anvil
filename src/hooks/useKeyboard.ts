@@ -9,7 +9,7 @@ import { useSkillStore } from "@/stores/skillStore";
  * - ArrowUp / ArrowDown: navigate the skill list
  */
 export function useKeyboard(): void {
-  const { toggleCommandPalette, toggleSettings } = useUIStore();
+  const { toggleCommandPalette, toggleSettings, toggleCreateDialog } = useUIStore();
   const { skills, selectedSkillId, setSelectedSkillId } = useSkillStore();
 
   useEffect(() => {
@@ -25,6 +25,12 @@ export function useKeyboard(): void {
       if (meta && e.key === ",") {
         e.preventDefault();
         toggleSettings();
+        return;
+      }
+
+      if (meta && e.key === "n") {
+        e.preventDefault();
+        toggleCreateDialog();
         return;
       }
 
@@ -56,6 +62,7 @@ export function useKeyboard(): void {
   }, [
     toggleCommandPalette,
     toggleSettings,
+    toggleCreateDialog,
     skills,
     selectedSkillId,
     setSelectedSkillId,

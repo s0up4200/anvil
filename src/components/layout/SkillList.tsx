@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { Search } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -8,6 +9,7 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu"
+import { InstallDialog } from "@/components/skills/InstallDialog"
 import { useSkillStore } from "@/stores/skillStore"
 import { useSkills } from "@/hooks/useSkills"
 import { deleteSkill, duplicateSkill, toggleSkill } from "@/lib/tauri"
@@ -18,7 +20,15 @@ import type { Skill } from "@/types"
 export function SkillList() {
   const { selectedSkillId, setSelectedSkillId, searchQuery, setSearchQuery, removeSkill, updateSkillInPlace } =
     useSkillStore()
-  const { skills, isLoading, error } = useSkills()
+  const { skills, isLoading, error, refetch } = useSkills()
+
+  const [installDialogOpen, setInstallDialogOpen] = useState(false)
+  const [installTarget, setInstallTarget] = useState<Skill | null>(null)
+
+  function handleOpenInstall(skill: Skill) {
+    setInstallTarget(skill)
+    setInstallDialogOpen(true)
+  }
 
   async function handleDelete(skill: Skill) {
     try {
@@ -150,6 +160,9 @@ export function SkillList() {
                 <ContextMenuItem onClick={() => void handleToggle(skill)}>
                   {skill.isEnabled ? "Disable" : "Enable"}
                 </ContextMenuItem>
+                <ContextMenuItem onClick={() => handleOpenInstall(skill)}>
+                  Install to…
+                </ContextMenuItem>
                 <ContextMenuSeparator />
                 <ContextMenuItem
                   variant="destructive"
@@ -161,6 +174,13 @@ export function SkillList() {
             </ContextMenu>
           ))}
       </div>
+
+      <InstallDialog
+        open={installDialogOpen}
+        onOpenChange={setInstallDialogOpen}
+        skill={installTarget}
+        onInstalled={refetch}
+      />
     </div>
   )
 }
