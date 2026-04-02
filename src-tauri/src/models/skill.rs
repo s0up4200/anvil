@@ -72,8 +72,11 @@ pub struct Skill {
     /// Absolute path to the skill file on disk.
     pub path: PathBuf,
 
-    /// Slug of the agent this skill was found under (e.g. `"claude-code"`).
-    pub agent_id: String,
+    /// Canonical (symlink-resolved) path used for deduplication.
+    pub resolved_path: PathBuf,
+
+    /// All agent IDs that reference this skill (merged when deduplicated).
+    pub agent_ids: Vec<String>,
 
     /// Parsed frontmatter, if present.
     pub frontmatter: Option<SkillFrontmatter>,
@@ -89,6 +92,21 @@ pub struct Skill {
 
     /// Where this file lives.
     pub source: SkillSource,
+
+    /// Whether the skill file is active (false when the file is `SKILL.md.disabled`).
+    pub is_enabled: bool,
+
+    /// Whether the skill is marked internal via frontmatter metadata.
+    pub is_internal: bool,
+
+    /// ISO-8601 timestamp of when the file was last modified.
+    pub last_modified: String,
+
+    /// File size in bytes.
+    pub file_size: u64,
+
+    /// Number of lines in the file.
+    pub line_count: usize,
 }
 
 #[cfg(test)]
