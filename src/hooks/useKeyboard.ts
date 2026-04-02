@@ -34,6 +34,18 @@ export function useKeyboard(): void {
         return;
       }
 
+      if (meta && e.shiftKey && e.key === "M") {
+        e.preventDefault();
+        useUIStore.getState().setActiveView("marketplace");
+        return;
+      }
+
+      if (meta && e.shiftKey && e.key === "U") {
+        e.preventDefault();
+        useUIStore.getState().setActiveView("updates");
+        return;
+      }
+
       // Arrow key navigation through the skill list.
       if (e.key === "ArrowDown" || e.key === "ArrowUp") {
         if (skills.length === 0) return;

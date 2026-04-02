@@ -23,7 +23,21 @@ pub fn run() {
             commands::skills::duplicate_skill,
             commands::skills::toggle_skill,
             commands::skills::install_skill_to_agent,
+            commands::marketplace::search_marketplace,
+            commands::marketplace::install_from_marketplace,
+            commands::marketplace::check_skill_updates,
+            commands::marketplace::update_marketplace_skill,
+            commands::marketplace::update_all_skills,
+            commands::marketplace::read_skill_lockfile,
+            commands::marketplace::diff_remote_skill,
         ])
+        .setup(|app| {
+            let handle = app.handle().clone();
+            std::thread::spawn(move || {
+                services::updater::run_background_check(handle);
+            });
+            Ok(())
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

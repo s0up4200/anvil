@@ -91,3 +91,39 @@ export interface SkillChangeEvent {
   path: string;
   eventType: string;
 }
+
+// ---------------------------------------------------------------------------
+// Marketplace (Phase 2)
+// ---------------------------------------------------------------------------
+
+export interface MarketplaceSkill {
+  package: string;
+  name: string;
+  source: string;
+  description: string;
+  installCount: string;
+  url: string;
+}
+
+export interface SkillUpdate {
+  skillName: string;
+  localHash: string;
+  sourceRepo: string;
+  installedAt: string;
+}
+
+export interface SkillDiff {
+  skillName: string;
+  localContent: string;
+  remoteContent: string;
+}
+
+export interface LockfileEntry {
+  source: string;
+  sourceType: string;
+  sourceUrl: string;
+  skillPath: string;
+  skillFolderHash: string;
+  installedAt: string;
+  updatedAt: string;
+}

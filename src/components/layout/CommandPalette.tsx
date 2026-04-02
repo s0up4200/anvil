@@ -1,4 +1,4 @@
-import { Moon, Settings, Sun } from "lucide-react"
+import { Moon, Settings, Sun, Store, RefreshCw } from "lucide-react"
 import {
   Command,
   CommandDialog,
@@ -15,7 +15,7 @@ import { useAgentStore } from "@/stores/agentStore"
 import { getAgentDisplayName } from "@/lib/constants"
 
 export function CommandPalette() {
-  const { commandPaletteOpen, setCommandPaletteOpen, theme, setTheme, setSettingsOpen } =
+  const { commandPaletteOpen, setCommandPaletteOpen, theme, setTheme, setSettingsOpen, setActiveView } =
     useUIStore()
   const { skills, setSelectedSkillId } = useSkillStore()
   const { agents, setSelectedAgentId } = useAgentStore()
@@ -62,6 +62,14 @@ export function CommandPalette() {
             <CommandItem onSelect={switchTheme}>
               {theme === "dark" ? <Sun /> : <Moon />}
               Switch to {theme === "dark" ? "Light" : "Dark"} Theme
+            </CommandItem>
+            <CommandItem onSelect={() => { setActiveView("marketplace"); close() }}>
+              <Store />
+              Open Marketplace
+            </CommandItem>
+            <CommandItem onSelect={() => { setActiveView("updates"); close() }}>
+              <RefreshCw />
+              Check for Updates
             </CommandItem>
           </CommandGroup>
 

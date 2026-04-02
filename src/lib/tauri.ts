@@ -4,6 +4,10 @@ import type {
   Skill,
   SkillFrontmatter,
   AppConfig,
+  MarketplaceSkill,
+  SkillUpdate,
+  SkillDiff,
+  LockfileEntry,
 } from "@/types";
 
 // ---------------------------------------------------------------------------
@@ -109,4 +113,45 @@ export function getConfig(): Promise<AppConfig> {
 /** Persist application config to disk. */
 export function saveConfig(config: AppConfig): Promise<void> {
   return invoke<void>("save_config", { config });
+}
+
+// ---------------------------------------------------------------------------
+// Marketplace commands
+// ---------------------------------------------------------------------------
+
+/** Search the skills.sh marketplace. */
+export function searchMarketplace(query: string): Promise<MarketplaceSkill[]> {
+  return invoke<MarketplaceSkill[]>("search_marketplace", { query });
+}
+
+/** Install a marketplace skill globally (vault + auto-symlink to all agents). */
+export function installFromMarketplace(params: {
+  package: string;
+}): Promise<void> {
+  return invoke<void>("install_from_marketplace", params);
+}
+
+/** Check for available skill updates. */
+export function checkSkillUpdates(): Promise<SkillUpdate[]> {
+  return invoke<SkillUpdate[]>("check_skill_updates");
+}
+
+/** Update a single marketplace skill. */
+export function updateMarketplaceSkill(skillName: string): Promise<void> {
+  return invoke<void>("update_marketplace_skill", { skillName });
+}
+
+/** Update all outdated marketplace skills. */
+export function updateAllSkills(): Promise<void> {
+  return invoke<void>("update_all_skills");
+}
+
+/** Read the skill lockfile entries. */
+export function readSkillLockfile(): Promise<[string, LockfileEntry][]> {
+  return invoke<[string, LockfileEntry][]>("read_skill_lockfile");
+}
+
+/** Fetch the diff between local and remote versions of a skill. */
+export function diffRemoteSkill(skillName: string): Promise<SkillDiff> {
+  return invoke<SkillDiff>("diff_remote_skill", { skillName });
 }

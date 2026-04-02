@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/context-menu"
 import { InstallDialog } from "@/components/skills/InstallDialog"
 import { useSkillStore } from "@/stores/skillStore"
+import { useUpdateStore } from "@/stores/updateStore"
 import { useSkills } from "@/hooks/useSkills"
 import { deleteSkill, duplicateSkill, toggleSkill } from "@/lib/tauri"
 import { getAgentColor } from "@/lib/constants"
@@ -20,6 +21,7 @@ import type { Skill } from "@/types"
 export function SkillList() {
   const { selectedSkillId, setSelectedSkillId, searchQuery, setSearchQuery, removeSkill, updateSkillInPlace } =
     useSkillStore()
+  const { pendingUpdates } = useUpdateStore()
   const { skills, isLoading, error, refetch } = useSkills()
 
   const [installDialogOpen, setInstallDialogOpen] = useState(false)
@@ -115,10 +117,16 @@ export function SkillList() {
                     !skill.isEnabled && "opacity-50"
                   )}
                 >
-                  {/* Name + agent dots */}
+                  {/* Name + update/agent dots */}
                   <div className="flex items-center justify-between gap-2">
-                    <span className="truncate text-sm font-medium">
+                    <span className="flex items-center gap-1.5 truncate text-sm font-medium">
                       {skill.name}
+                      {pendingUpdates.some((u) => u.skillName === skill.name) && (
+                        <span
+                          className="size-1.5 shrink-0 rounded-full bg-blue-500"
+                          title="Update available"
+                        />
+                      )}
                     </span>
                     <div className="flex shrink-0 items-center gap-0.5">
                       {skill.agentIds.map((agentId) => (

@@ -1,16 +1,18 @@
-import { Settings } from "lucide-react"
+import { Settings, Store, RefreshCw } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { useAgentStore } from "@/stores/agentStore"
 import { useSkillStore } from "@/stores/skillStore"
 import { useUIStore } from "@/stores/uiStore"
+import { useUpdateStore } from "@/stores/updateStore"
 import { getAgentColor, getAgentDisplayName } from "@/lib/constants"
 import { cn } from "@/lib/utils"
 
 export function Sidebar() {
   const { agents, selectedAgentId, setSelectedAgentId } = useAgentStore()
   const { skills } = useSkillStore()
-  const { setSettingsOpen } = useUIStore()
+  const { activeView, setActiveView, setSettingsOpen } = useUIStore()
+  const updateCount = useUpdateStore((s) => s.pendingUpdates.length)
 
   const totalCount = skills.length
 
@@ -25,10 +27,10 @@ export function Sidebar() {
         {/* All Skills row */}
         <button
           type="button"
-          onClick={() => setSelectedAgentId(null)}
+          onClick={() => { setSelectedAgentId(null); setActiveView("skills") }}
           className={cn(
             "flex w-full items-center justify-between rounded-md px-2 py-1.5 text-sm transition-colors",
-            selectedAgentId === null
+            activeView === "skills" && selectedAgentId === null
               ? "bg-accent text-accent-foreground font-medium"
               : "text-foreground hover:bg-muted"
           )}
@@ -52,10 +54,10 @@ export function Sidebar() {
               key={agent.id}
               type="button"
               disabled={!isDetected}
-              onClick={() => setSelectedAgentId(agent.id)}
+              onClick={() => { setSelectedAgentId(agent.id); setActiveView("skills") }}
               className={cn(
                 "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors",
-                isActive
+                activeView === "skills" && isActive
                   ? "bg-accent text-accent-foreground font-medium"
                   : isDetected
                     ? "text-foreground hover:bg-muted"
@@ -78,8 +80,31 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* Settings button */}
-      <div className="border-t border-border p-2">
+      {/* Bottom nav */}
+      <div className="border-t border-border p-2 flex flex-col gap-0.5">
+        <Button
+          variant={activeView === "marketplace" ? "secondary" : "ghost"}
+          size="sm"
+          className="w-full justify-start gap-2"
+          onClick={() => setActiveView("marketplace")}
+        >
+          <Store className="size-4" />
+          Marketplace
+        </Button>
+        <Button
+          variant={activeView === "updates" ? "secondary" : "ghost"}
+          size="sm"
+          className="w-full justify-start gap-2"
+          onClick={() => setActiveView("updates")}
+        >
+          <RefreshCw className="size-4" />
+          Updates
+          {updateCount > 0 && (
+            <Badge variant="default" className="ml-auto tabular-nums text-xs px-1.5 py-0">
+              {updateCount}
+            </Badge>
+          )}
+        </Button>
         <Button
           variant="ghost"
           size="sm"

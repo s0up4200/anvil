@@ -27,6 +27,12 @@ pub enum AppError {
 
     #[error("Symlink permission denied: {0}")]
     SymlinkPermissionDenied(String),
+
+    #[error("CLI not found: {0}")]
+    CliNotFound(String),
+
+    #[error("CLI error: {0}")]
+    CliError(String),
 }
 
 impl From<std::io::Error> for AppError {

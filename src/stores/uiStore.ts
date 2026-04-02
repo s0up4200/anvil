@@ -1,9 +1,11 @@
 import { create } from "zustand";
 
 export type Theme = "dark" | "light" | "system";
+export type ActiveView = "skills" | "marketplace" | "updates";
 
 interface UIState {
   theme: Theme;
+  activeView: ActiveView;
   commandPaletteOpen: boolean;
   settingsOpen: boolean;
   createDialogOpen: boolean;
@@ -12,6 +14,7 @@ interface UIState {
 
 interface UIActions {
   setTheme: (theme: Theme) => void;
+  setActiveView: (view: ActiveView) => void;
   setCommandPaletteOpen: (open: boolean) => void;
   setSettingsOpen: (open: boolean) => void;
   setCreateDialogOpen: (open: boolean) => void;
@@ -21,6 +24,7 @@ interface UIActions {
 export const useUIStore = create<UIState & UIActions>()((set) => ({
   // State
   theme: "system",
+  activeView: "skills",
   commandPaletteOpen: false,
   settingsOpen: false,
   createDialogOpen: false,
@@ -28,6 +32,7 @@ export const useUIStore = create<UIState & UIActions>()((set) => ({
 
   // Actions
   setTheme: (theme) => set({ theme }),
+  setActiveView: (activeView) => set({ activeView }),
   setCommandPaletteOpen: (open) => set({ commandPaletteOpen: open }),
   setSettingsOpen: (open) => set({ settingsOpen: open }),
   setCreateDialogOpen: (open) => set({ createDialogOpen: open }),
