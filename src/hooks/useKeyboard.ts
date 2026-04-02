@@ -9,7 +9,7 @@ import { useSkillStore } from "@/stores/skillStore";
  * - ArrowUp / ArrowDown: navigate the skill list
  */
 export function useKeyboard(): void {
-  const { toggleCommandPalette, toggleSettings, toggleCreateDialog } = useUIStore();
+  const { setCommandPaletteOpen, setSettingsOpen, setCreateDialogOpen } = useUIStore();
   const { skills, selectedSkillId, setSelectedSkillId } = useSkillStore();
 
   useEffect(() => {
@@ -18,19 +18,19 @@ export function useKeyboard(): void {
 
       if (meta && e.key === "k") {
         e.preventDefault();
-        toggleCommandPalette();
+        setCommandPaletteOpen(!useUIStore.getState().commandPaletteOpen);
         return;
       }
 
       if (meta && e.key === ",") {
         e.preventDefault();
-        toggleSettings();
+        setSettingsOpen(!useUIStore.getState().settingsOpen);
         return;
       }
 
       if (meta && e.key === "n") {
         e.preventDefault();
-        toggleCreateDialog();
+        setCreateDialogOpen(!useUIStore.getState().createDialogOpen);
         return;
       }
 
@@ -60,9 +60,9 @@ export function useKeyboard(): void {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [
-    toggleCommandPalette,
-    toggleSettings,
-    toggleCreateDialog,
+    setCommandPaletteOpen,
+    setSettingsOpen,
+    setCreateDialogOpen,
     skills,
     selectedSkillId,
     setSelectedSkillId,

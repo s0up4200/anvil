@@ -10,6 +10,8 @@ use crate::models::agent::Agent;
 use crate::models::skill::{Skill, SkillScope, SkillSource};
 use crate::services::{parser, symlink};
 
+pub const SKILL_FILES: [(&str, bool); 2] = [("SKILL.md", true), ("SKILL.md.disabled", false)];
+
 /// Scan a single agent directory for skills.
 ///
 /// Returns an empty vec if `dir` does not exist. Errors from individual skill
@@ -30,7 +32,6 @@ pub fn scan_directory(
     dir: &Path,
     agent_id: &str,
     scope: SkillScope,
-    _project_dir: Option<&str>,
 ) -> Result<Vec<Skill>, AppError> {
     if !dir.exists() {
         return Ok(vec![]);
@@ -39,7 +40,7 @@ pub fn scan_directory(
     let mut skills = Vec::new();
 
     // Check for a SKILL.md (or SKILL.md.disabled) directly in the directory.
-    for (filename, enabled) in [("SKILL.md", true), ("SKILL.md.disabled", false)] {
+    for (filename, enabled) in SKILL_FILES {
         let candidate = dir.join(filename);
         if candidate.is_file() {
             if let Some(skill) = build_skill(&candidate, dir, agent_id, scope.clone(), enabled) {
@@ -56,7 +57,7 @@ pub fn scan_directory(
             continue;
         }
 
-        for (filename, enabled) in [("SKILL.md", true), ("SKILL.md.disabled", false)] {
+        for (filename, enabled) in SKILL_FILES {
             let candidate = entry_path.join(filename);
             if candidate.is_file() {
                 if let Some(skill) =
@@ -83,7 +84,7 @@ pub fn scan_all(agents: &[Agent]) -> Vec<Skill> {
             None => continue,
         };
 
-        let skills = match scan_directory(&skills_path, &agent.id, SkillScope::Global, None) {
+        let skills = match scan_directory(&skills_path, &agent.id, SkillScope::Global) {
             Ok(s) => s,
             Err(_) => continue,
         };
@@ -254,7 +255,7 @@ mod tests {
         write_skill(&sub1, "SKILL.md");
         write_skill(&sub2, "SKILL.md");
 
-        let skills = scan_directory(root, "test-agent", SkillScope::Global, None).unwrap();
+        let skills = scan_directory(root, "test-agent", SkillScope::Global).unwrap();
         assert_eq!(skills.len(), 2);
 
         let names: Vec<&str> = skills.iter().map(|s| s.name.as_str()).collect();
@@ -269,7 +270,7 @@ mod tests {
         let root = tmp.path();
         write_skill(root, "SKILL.md");
 
-        let skills = scan_directory(root, "test-agent", SkillScope::Global, None).unwrap();
+        let skills = scan_directory(root, "test-agent", SkillScope::Global).unwrap();
         assert_eq!(skills.len(), 1);
         assert!(skills[0].is_enabled);
     }
@@ -283,7 +284,7 @@ mod tests {
         let sub = make_subdir(root, "my-skill");
         write_skill(&sub, "SKILL.md.disabled");
 
-        let skills = scan_directory(root, "test-agent", SkillScope::Global, None).unwrap();
+        let skills = scan_directory(root, "test-agent", SkillScope::Global).unwrap();
         assert_eq!(skills.len(), 1);
         assert!(!skills[0].is_enabled, "disabled skill should have is_enabled = false");
     }
@@ -293,7 +294,7 @@ mod tests {
     fn scan_empty_dir() {
         let tmp = TempDir::new().unwrap();
         let skills =
-            scan_directory(tmp.path(), "test-agent", SkillScope::Global, None).unwrap();
+            scan_directory(tmp.path(), "test-agent", SkillScope::Global).unwrap();
         assert!(skills.is_empty());
     }
 
@@ -301,7 +302,7 @@ mod tests {
     #[test]
     fn scan_nonexistent_dir() {
         let non_existent = Path::new("/tmp/__skillforge_nonexistent_dir_12345__");
-        let result = scan_directory(non_existent, "test-agent", SkillScope::Global, None);
+        let result = scan_directory(non_existent, "test-agent", SkillScope::Global);
         assert!(result.is_ok());
         assert!(result.unwrap().is_empty());
     }

@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import {
   Dialog,
   DialogContent,
@@ -14,13 +13,12 @@ import {
   TabsTrigger,
   TabsContent,
 } from "@/components/ui/tabs"
-import { useUIStore } from "@/stores/uiStore"
+import { useUIStore, type Theme } from "@/stores/uiStore"
 import { useAgentStore } from "@/stores/agentStore"
 import { getConfig, saveConfig } from "@/lib/tauri"
 import { getAgentDisplayName } from "@/lib/constants"
+import { getErrorMessage } from "@/lib/utils"
 import type { AppConfig } from "@/types"
-
-type Theme = "dark" | "light" | "system"
 
 const DEFAULT_CONFIG: AppConfig = {
   customAgents: [],
@@ -34,7 +32,6 @@ export function SettingsView() {
   const { agents } = useAgentStore()
 
   const [config, setConfig] = useState<AppConfig>(DEFAULT_CONFIG)
-  const [editorFont, setEditorFont] = useState("")
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -64,7 +61,7 @@ export function SettingsView() {
       await saveConfig(config)
       setSettingsOpen(false)
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err))
+      setError(getErrorMessage(err))
     } finally {
       setIsSaving(false)
     }
@@ -102,26 +99,6 @@ export function SettingsView() {
                     </Button>
                   ))}
                 </div>
-              </div>
-
-              {/* Editor font */}
-              <div className="flex flex-col gap-1.5">
-                <label
-                  htmlFor="editor-font"
-                  className="text-xs font-medium text-foreground"
-                >
-                  Editor Font{" "}
-                  <span className="font-normal text-muted-foreground">(optional)</span>
-                </label>
-                <Input
-                  id="editor-font"
-                  placeholder="e.g. JetBrains Mono, monospace"
-                  value={editorFont}
-                  onChange={(e) => setEditorFont(e.target.value)}
-                />
-                <p className="text-xs text-muted-foreground">
-                  Font family used in the skill editor.
-                </p>
               </div>
             </div>
           </TabsContent>

@@ -1,9 +1,10 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
+use crate::error::AppError;
 use crate::models::agent::known_agents;
 use crate::models::skill::{Skill, SkillFrontmatter};
-use crate::services::{parser, scanner, symlink};
+use crate::services::{fs as svc_fs, parser, scanner, symlink};
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -17,7 +18,7 @@ fn skill_dir(path: &Path) -> PathBuf {
         .file_name()
         .and_then(|n| n.to_str())
         .unwrap_or("");
-    if name == "SKILL.md" || name == "SKILL.md.disabled" {
+    if scanner::SKILL_FILES.iter().any(|(f, _)| *f == name) {
         path.parent().unwrap_or(path).to_path_buf()
     } else {
         path.to_path_buf()
@@ -26,30 +27,19 @@ fn skill_dir(path: &Path) -> PathBuf {
 
 /// Validate that a skill name contains only lowercase ASCII letters, digits,
 /// and hyphens.
-fn validate_skill_name(name: &str) -> Result<(), String> {
+fn validate_skill_name(name: &str) -> Result<(), AppError> {
     if name.is_empty() {
-        return Err("skill name must not be empty".to_string());
+        return Err(AppError::InvalidInput("skill name must not be empty".to_string()));
     }
     if !name
         .chars()
         .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-')
     {
-        return Err(format!(
+        return Err(AppError::InvalidInput(format!(
             "skill name '{name}' is invalid: only lowercase letters, digits, and hyphens are allowed"
-        ));
+        )));
     }
     Ok(())
-}
-
-/// Atomic write: write `content` to a `.tmp` sibling, then rename over `dest`.
-fn atomic_write(dest: &Path, content: &str) -> Result<(), String> {
-    let tmp = dest.with_extension("tmp");
-    fs::write(&tmp, content).map_err(|e| e.to_string())?;
-    fs::rename(&tmp, dest).map_err(|e| {
-        // Best-effort cleanup of the temp file before surfacing the error.
-        let _ = fs::remove_file(&tmp);
-        e.to_string()
-    })
 }
 
 // ---------------------------------------------------------------------------
@@ -60,7 +50,7 @@ fn atomic_write(dest: &Path, content: &str) -> Result<(), String> {
 ///
 /// Agent detection happens internally; the frontend does not pass agents in.
 #[tauri::command]
-pub fn scan_all_skills() -> Result<Vec<Skill>, String> {
+pub fn scan_all_skills() -> Result<Vec<Skill>, AppError> {
     let agents: Vec<_> = known_agents()
         .into_iter()
         .filter(|a| a.skills_path.as_ref().map(|p| p.exists()).unwrap_or(false))
@@ -73,9 +63,9 @@ pub fn scan_all_skills() -> Result<Vec<Skill>, String> {
 ///
 /// Returns `(frontmatter, body)`.
 #[tauri::command]
-pub fn get_skill(path: String) -> Result<(SkillFrontmatter, String), String> {
-    let raw = fs::read_to_string(&path).map_err(|e| e.to_string())?;
-    parser::parse_skill_content(&raw).map_err(|e| e.to_string())
+pub fn get_skill(path: String) -> Result<(SkillFrontmatter, String), AppError> {
+    let raw = fs::read_to_string(&path)?;
+    parser::parse_skill_content(&raw)
 }
 
 /// Create a new skill directory + `SKILL.md` inside `agent_path`.
@@ -88,14 +78,17 @@ pub fn create_skill(
     body: String,
     agent_path: String,
     scope: String,
-) -> Result<String, String> {
+) -> Result<String, AppError> {
     validate_skill_name(&name)?;
 
     let skill_dir = PathBuf::from(&agent_path).join(&name);
     if skill_dir.exists() {
-        return Err(format!("skill directory already exists: {}", skill_dir.display()));
+        return Err(AppError::InvalidInput(format!(
+            "skill directory already exists: {}",
+            skill_dir.display()
+        )));
     }
-    fs::create_dir_all(&skill_dir).map_err(|e| e.to_string())?;
+    fs::create_dir_all(&skill_dir)?;
 
     let frontmatter = SkillFrontmatter {
         description: if description.is_empty() {
@@ -118,10 +111,10 @@ pub fn create_skill(
         );
     }
 
-    let content = parser::serialize_skill_content(&fm, &body).map_err(|e| e.to_string())?;
+    let content = parser::serialize_skill_content(&fm, &body)?;
 
     let skill_md = skill_dir.join("SKILL.md");
-    atomic_write(&skill_md, &content)?;
+    svc_fs::atomic_write(&skill_md, &content)?;
 
     Ok(skill_md.to_string_lossy().into_owned())
 }
@@ -131,13 +124,12 @@ pub fn create_skill(
 /// `frontmatter` is a JSON string that deserialises into `SkillFrontmatter`.
 /// Uses an atomic temp-file + rename to avoid partial writes.
 #[tauri::command]
-pub fn update_skill(path: String, frontmatter: String, body: String) -> Result<(), String> {
-    let fm: SkillFrontmatter =
-        serde_json::from_str(&frontmatter).map_err(|e| e.to_string())?;
+pub fn update_skill(path: String, frontmatter: String, body: String) -> Result<(), AppError> {
+    let fm: SkillFrontmatter = serde_json::from_str(&frontmatter)?;
 
-    let content = parser::serialize_skill_content(&fm, &body).map_err(|e| e.to_string())?;
+    let content = parser::serialize_skill_content(&fm, &body)?;
 
-    atomic_write(Path::new(&path), &content)
+    svc_fs::atomic_write(Path::new(&path), &content)
 }
 
 /// Move a skill (its parent directory, or the file itself) to the OS trash.
@@ -145,18 +137,18 @@ pub fn update_skill(path: String, frontmatter: String, body: String) -> Result<(
 /// If `path` points to a `SKILL.md` inside a named skill directory, the whole
 /// directory is trashed so no orphan directories are left behind.
 #[tauri::command]
-pub fn delete_skill(path: String) -> Result<(), String> {
+pub fn delete_skill(path: String) -> Result<(), AppError> {
     let p = Path::new(&path);
     let target = skill_dir(p);
 
-    trash::delete(&target).map_err(|e| e.to_string())
+    trash::delete(&target).map_err(|e| AppError::Io(e.to_string()))
 }
 
 /// Duplicate a skill into a sibling directory with a `-copy` suffix.
 ///
 /// Returns the path of the new `SKILL.md`.
 #[tauri::command]
-pub fn duplicate_skill(path: String) -> Result<String, String> {
+pub fn duplicate_skill(path: String) -> Result<String, AppError> {
     let src_path = Path::new(&path);
     let src_dir = skill_dir(src_path);
 
@@ -165,13 +157,13 @@ pub fn duplicate_skill(path: String) -> Result<String, String> {
     let base_name = src_dir
         .file_name()
         .and_then(|n| n.to_str())
-        .ok_or_else(|| "cannot derive skill name from path".to_string())?;
+        .ok_or_else(|| AppError::Path("cannot derive skill name from path".to_string()))?;
 
     let new_name = format!("{base_name}-copy");
 
     let parent = src_dir
         .parent()
-        .ok_or_else(|| "skill directory has no parent".to_string())?;
+        .ok_or_else(|| AppError::Path("skill directory has no parent".to_string()))?;
 
     // Find a unique destination (append -2, -3 … if the -copy dir exists).
     let dst_dir = {
@@ -190,7 +182,7 @@ pub fn duplicate_skill(path: String) -> Result<String, String> {
         }
     };
 
-    symlink::copy_skill(&src_dir, &dst_dir).map_err(|e| e.to_string())?;
+    symlink::copy_skill(&src_dir, &dst_dir)?;
 
     let new_skill_md = dst_dir.join("SKILL.md");
     if new_skill_md.exists() {
@@ -201,10 +193,10 @@ pub fn duplicate_skill(path: String) -> Result<String, String> {
         if disabled.exists() {
             Ok(disabled.to_string_lossy().into_owned())
         } else {
-            Err(format!(
+            Err(AppError::NotFound(format!(
                 "copied skill directory exists but no SKILL.md found: {}",
                 dst_dir.display()
-            ))
+            )))
         }
     }
 }
@@ -213,11 +205,11 @@ pub fn duplicate_skill(path: String) -> Result<String, String> {
 ///
 /// Returns the new file path after the rename.
 #[tauri::command]
-pub fn toggle_skill(path: String, enabled: bool) -> Result<String, String> {
+pub fn toggle_skill(path: String, enabled: bool) -> Result<String, AppError> {
     let src = PathBuf::from(&path);
     let parent = src
         .parent()
-        .ok_or_else(|| "skill file has no parent directory".to_string())?;
+        .ok_or_else(|| AppError::Path("skill file has no parent directory".to_string()))?;
 
     let dst = if enabled {
         // Caller wants to enable → target name is SKILL.md
@@ -232,7 +224,7 @@ pub fn toggle_skill(path: String, enabled: bool) -> Result<String, String> {
         return Ok(dst.to_string_lossy().into_owned());
     }
 
-    fs::rename(&src, &dst).map_err(|e| e.to_string())?;
+    fs::rename(&src, &dst)?;
     Ok(dst.to_string_lossy().into_owned())
 }
 
@@ -246,26 +238,26 @@ pub fn install_skill_to_agent(
     source_path: String,
     target_dir: String,
     method: String,
-) -> Result<(), String> {
+) -> Result<(), AppError> {
     let src = skill_dir(Path::new(&source_path));
     let skill_name = src
         .file_name()
-        .ok_or_else(|| "cannot derive skill name from source path".to_string())?;
+        .ok_or_else(|| AppError::Path("cannot derive skill name from source path".to_string()))?;
 
     let dst = PathBuf::from(&target_dir).join(skill_name);
 
     if dst.exists() {
-        return Err(format!(
+        return Err(AppError::InvalidInput(format!(
             "target already exists: {}",
             dst.display()
-        ));
+        )));
     }
 
     match method.as_str() {
-        "symlink" => symlink::create_skill_symlink(&src, &dst).map_err(|e| e.to_string()),
-        "copy" => symlink::copy_skill(&src, &dst).map_err(|e| e.to_string()),
-        other => Err(format!(
+        "symlink" => symlink::create_skill_symlink(&src, &dst),
+        "copy" => symlink::copy_skill(&src, &dst),
+        other => Err(AppError::InvalidInput(format!(
             "unknown install method '{other}': expected 'symlink' or 'copy'"
-        )),
+        ))),
     }
 }

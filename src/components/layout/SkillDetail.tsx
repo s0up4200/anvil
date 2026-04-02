@@ -6,18 +6,14 @@ import { SkillEditor } from "@/components/editor/SkillEditor"
 import { useSkillStore } from "@/stores/skillStore"
 import { useUIStore } from "@/stores/uiStore"
 import { getSkill, updateSkill } from "@/lib/tauri"
+import { getErrorMessage, resolveTheme } from "@/lib/utils"
 import type { SkillFrontmatter } from "@/types"
 
 export function SkillDetail() {
   const { skills, selectedSkillId } = useSkillStore()
   const storeTheme = useUIStore((s) => s.theme)
 
-  const resolvedTheme: "dark" | "light" =
-    storeTheme === "system"
-      ? window.matchMedia("(prefers-color-scheme: dark)").matches
-        ? "dark"
-        : "light"
-      : storeTheme
+  const resolvedTheme = resolveTheme(storeTheme)
 
   const selectedSkill = skills.find((s) => s.id === selectedSkillId) ?? null
 
@@ -49,7 +45,7 @@ export function SkillDetail() {
         setError(null)
       })
       .catch((err: unknown) => {
-        setError(err instanceof Error ? err.message : String(err))
+        setError(getErrorMessage(err))
       })
   }, [selectedSkill?.path])
 
@@ -72,7 +68,7 @@ export function SkillDetail() {
       setSavedFrontmatter(frontmatter)
       setSavedBody(body)
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err))
+      setError(getErrorMessage(err))
     } finally {
       setIsSaving(false)
     }

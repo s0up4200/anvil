@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { detectAgents } from "@/lib/tauri";
 import { useAgentStore } from "@/stores/agentStore";
 import type { Agent } from "@/types";
+import { getErrorMessage } from "@/lib/utils";
 
 interface UseAgentsResult {
   agents: Agent[];
@@ -33,7 +34,7 @@ export function useAgents(): UseAgentsResult {
       })
       .catch((err: unknown) => {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : String(err));
+          setError(getErrorMessage(err));
           setIsLoading(false);
         }
       });

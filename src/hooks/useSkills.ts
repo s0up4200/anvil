@@ -3,6 +3,7 @@ import { scanAllSkills } from "@/lib/tauri";
 import { useSkillStore } from "@/stores/skillStore";
 import { useAgentStore } from "@/stores/agentStore";
 import type { Skill } from "@/types";
+import { getErrorMessage } from "@/lib/utils";
 
 interface UseSkillsResult {
   /** Filtered and sorted list of skills. */
@@ -35,7 +36,7 @@ export function useSkills(): UseSkillsResult {
         setIsLoading(false);
       })
       .catch((err: unknown) => {
-        setError(err instanceof Error ? err.message : String(err));
+        setError(getErrorMessage(err));
         setIsLoading(false);
       });
   }, [setSkills]);

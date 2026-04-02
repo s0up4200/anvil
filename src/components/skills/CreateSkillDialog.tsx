@@ -11,6 +11,7 @@ import {
 import { useAgentStore } from "@/stores/agentStore"
 import { createSkill } from "@/lib/tauri"
 import { getAgentDisplayName } from "@/lib/constants"
+import { getErrorMessage } from "@/lib/utils"
 
 interface CreateSkillDialogProps {
   open: boolean
@@ -71,7 +72,7 @@ export function CreateSkillDialog({
       onOpenChange(false)
       onCreated?.()
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err))
+      setError(getErrorMessage(err))
       setIsCreating(false)
     }
   }

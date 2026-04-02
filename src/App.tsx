@@ -10,6 +10,7 @@ import { useSkills } from "@/hooks/useSkills"
 import { useFileWatcher } from "@/hooks/useFileWatcher"
 import { useKeyboard } from "@/hooks/useKeyboard"
 import { useUIStore } from "@/stores/uiStore"
+import { resolveTheme } from "@/lib/utils"
 
 export default function App() {
   const { theme, createDialogOpen, setCreateDialogOpen } = useUIStore()
@@ -20,16 +21,8 @@ export default function App() {
 
   // Apply theme class to <html>
   useEffect(() => {
-    const root = document.documentElement
-    if (theme === "dark") {
-      root.classList.add("dark")
-    } else if (theme === "light") {
-      root.classList.remove("dark")
-    } else {
-      // system: follow OS preference
-      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches
-      root.classList.toggle("dark", prefersDark)
-    }
+    const isDark = resolveTheme(theme) === "dark"
+    document.documentElement.classList.toggle("dark", isDark)
   }, [theme])
 
   return (

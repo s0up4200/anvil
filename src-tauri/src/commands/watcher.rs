@@ -9,6 +9,8 @@ use std::sync::Mutex;
 use std::time::Duration;
 use tauri::{AppHandle, Emitter, Manager};
 
+use crate::error::AppError;
+
 #[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SkillChangeEvent {
@@ -21,13 +23,13 @@ pub struct WatcherState {
 }
 
 #[tauri::command]
-pub fn start_file_watcher(app: AppHandle, paths: Vec<String>) -> Result<(), String> {
+pub fn start_file_watcher(app: AppHandle, paths: Vec<String>) -> Result<(), AppError> {
     let state = app.state::<Mutex<WatcherState>>();
 
     let (tx, rx) = std::sync::mpsc::channel();
 
-    let mut debouncer = new_debouncer(Duration::from_millis(500), tx)
-        .map_err(|e| e.to_string())?;
+    let mut debouncer =
+        new_debouncer(Duration::from_millis(500), tx).map_err(|e| AppError::Io(e.to_string()))?;
 
     for path_str in &paths {
         let path = Path::new(path_str);
@@ -37,7 +39,7 @@ pub fn start_file_watcher(app: AppHandle, paths: Vec<String>) -> Result<(), Stri
         debouncer
             .watcher()
             .watch(path, RecursiveMode::Recursive)
-            .map_err(|e| e.to_string())?;
+            .map_err(|e| AppError::Io(e.to_string()))?;
     }
 
     let app_clone = app.clone();
@@ -63,7 +65,9 @@ pub fn start_file_watcher(app: AppHandle, paths: Vec<String>) -> Result<(), Stri
         }
     });
 
-    let mut watcher_state = state.lock().map_err(|e| e.to_string())?;
+    let mut watcher_state = state
+        .lock()
+        .map_err(|e| AppError::Io(e.to_string()))?;
     watcher_state.handle = Some(debouncer);
 
     Ok(())

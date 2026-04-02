@@ -11,6 +11,7 @@ import { useAgentStore } from "@/stores/agentStore"
 import { installSkillToAgent } from "@/lib/tauri"
 import { getAgentDisplayName } from "@/lib/constants"
 import type { Skill } from "@/types"
+import { getErrorMessage } from "@/lib/utils"
 
 interface InstallDialogProps {
   open: boolean
@@ -89,7 +90,7 @@ export function InstallDialog({
       onOpenChange(false)
       onInstalled?.()
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err))
+      setError(getErrorMessage(err))
       setIsInstalling(false)
     }
   }

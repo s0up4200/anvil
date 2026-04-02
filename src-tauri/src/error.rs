@@ -40,3 +40,7 @@ impl From<serde_json::Error> for AppError {
         AppError::Json(e.to_string())
     }
 }
+
+// Note: `From<AppError> for tauri::ipc::InvokeError` is provided automatically
+// by Tauri's blanket `impl<T: Serialize> From<T> for InvokeError`, since
+// `AppError` derives `Serialize`.
