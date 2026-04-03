@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import Markdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import {
   Dialog,
   DialogContent,
@@ -9,9 +10,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { fetchMarketplaceSkillContent } from "@/lib/tauri"
+import { fetchMarketplaceSkillContent, fetchSkillMetadata } from "@/lib/tauri"
 import { getErrorMessage } from "@/lib/utils"
-import type { MarketplaceSkill } from "@/types"
+import type { MarketplaceSkill, SkillMetadata } from "@/types"
 
 interface SkillDetailDialogProps {
   skill: MarketplaceSkill | null
@@ -27,12 +28,14 @@ export function SkillDetailDialog({
   onInstall,
 }: SkillDetailDialogProps) {
   const [content, setContent] = useState<string | null>(null)
+  const [metadata, setMetadata] = useState<SkillMetadata | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!open || !skill) {
       setContent(null)
+      setMetadata(null)
       setError(null)
       return
     }
@@ -41,9 +44,15 @@ export function SkillDetailDialog({
     setLoading(true)
     setError(null)
 
-    fetchMarketplaceSkillContent(skill.package)
-      .then((md) => {
-        if (!cancelled) setContent(md)
+    // Fetch SKILL.md content and skills.sh metadata in parallel
+    const contentPromise = fetchMarketplaceSkillContent(skill.package)
+    const metadataPromise = fetchSkillMetadata(skill.source, skill.name).catch(() => null)
+
+    Promise.all([contentPromise, metadataPromise])
+      .then(([md, meta]) => {
+        if (cancelled) return
+        setContent(md)
+        setMetadata(meta)
       })
       .catch((err) => {
         if (!cancelled) setError(getErrorMessage(err))
@@ -82,20 +91,114 @@ export function SkillDetailDialog({
           </div>
         </DialogHeader>
 
-        <div className="flex-1 min-h-0 overflow-auto rounded-md border border-border p-4">
-          {loading && (
-            <p className="text-sm text-muted-foreground animate-pulse">
-              Loading...
-            </p>
-          )}
-          {error && (
-            <p className="text-sm text-destructive">{error}</p>
-          )}
-          {!loading && !error && content != null && (
-            <div className="prose dark:prose-invert prose-sm max-w-none">
-              <Markdown remarkPlugins={[remarkGfm]}>
-                {content.replace(/^---\n[\s\S]*?\n---\n*/, "")}
-              </Markdown>
+        <div className="flex flex-1 min-h-0 gap-4">
+          {/* Main content */}
+          <div className="flex-1 min-w-0 overflow-auto rounded-md border border-border p-4">
+            {loading && (
+              <p className="text-sm text-muted-foreground animate-pulse">
+                Loading...
+              </p>
+            )}
+            {error && (
+              <p className="text-sm text-destructive">{error}</p>
+            )}
+            {!loading && !error && content != null && (
+              <div className="space-y-4">
+                {/* Summary */}
+                {metadata?.summaryHtml && (
+                  <div className="rounded-md border border-border bg-muted/30 p-3">
+                    <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-2">Summary</p>
+                    <div
+                      className="prose dark:prose-invert prose-sm max-w-none prose-p:my-1 prose-ul:my-1 prose-li:my-0"
+                      dangerouslySetInnerHTML={{ __html: metadata.summaryHtml }}
+                    />
+                  </div>
+                )}
+
+                {/* SKILL.md */}
+                <div className="prose dark:prose-invert prose-sm max-w-none">
+                  <Markdown remarkPlugins={[remarkGfm]}>
+                    {content.replace(/^---\n[\s\S]*?\n---\n*/, "")}
+                  </Markdown>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Sidebar */}
+          {!loading && metadata && (
+            <div className="hidden sm:flex w-44 shrink-0 flex-col gap-4 overflow-auto text-sm">
+              {metadata.weeklyInstalls && (
+                <div>
+                  <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1">Weekly Installs</p>
+                  <p className="text-lg font-semibold tabular-nums">{metadata.weeklyInstalls}</p>
+                </div>
+              )}
+
+              <div>
+                <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1">Repository</p>
+                <a
+                  href={`https://github.com/${skill?.source}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-foreground hover:underline"
+                >
+                  {skill?.source}
+                </a>
+              </div>
+
+              {metadata.githubStars && (
+                <div>
+                  <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1">GitHub Stars</p>
+                  <p className="text-xs tabular-nums">{metadata.githubStars}</p>
+                </div>
+              )}
+
+              {metadata.firstSeen && (
+                <div>
+                  <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1">First Seen</p>
+                  <p className="text-xs">{metadata.firstSeen}</p>
+                </div>
+              )}
+
+              {metadata.audits.length > 0 && (
+                <div>
+                  <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1.5">Security Audits</p>
+                  <div className="flex flex-col gap-1">
+                    {metadata.audits.map((audit) => (
+                      <div key={audit.name} className="flex items-center justify-between gap-2">
+                        <span className="text-xs text-muted-foreground truncate">{audit.name}</span>
+                        <Badge
+                          variant="outline"
+                          className={
+                            audit.status === "PASS"
+                              ? "text-green-500 border-green-500/30 text-[10px] px-1.5 py-0"
+                              : audit.status === "WARN"
+                                ? "text-yellow-500 border-yellow-500/30 text-[10px] px-1.5 py-0"
+                                : "text-red-500 border-red-500/30 text-[10px] px-1.5 py-0"
+                          }
+                        >
+                          {audit.status}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {metadata.installedOn.length > 0 && (
+                <div>
+                  <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1.5">Installed On</p>
+                  <div className="flex flex-col divide-y divide-border">
+                    {metadata.installedOn.map((entry) => (
+                      <div key={entry.agent} className="flex items-center justify-between py-1">
+                        <span className="text-xs">{entry.agent}</span>
+                        <span className="text-xs tabular-nums text-muted-foreground">{entry.count}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

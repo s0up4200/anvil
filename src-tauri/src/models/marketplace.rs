@@ -41,6 +41,31 @@ pub struct LeaderboardSkill {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct SkillMetadata {
+    pub summary_html: Option<String>,
+    pub weekly_installs: Option<String>,
+    pub github_stars: Option<String>,
+    pub first_seen: Option<String>,
+    pub audits: Vec<SkillAudit>,
+    pub installed_on: Vec<AgentInstalls>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AgentInstalls {
+    pub agent: String,
+    pub count: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SkillAudit {
+    pub name: String,
+    pub status: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct LockfileEntry {
     pub source: String,
     #[serde(default)]

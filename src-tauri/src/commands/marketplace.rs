@@ -1,7 +1,7 @@
 use tauri::AppHandle;
 
 use crate::error::AppError;
-use crate::models::{LeaderboardSkill, LockfileEntry, MarketplaceSkill, SkillDiff, SkillUpdate};
+use crate::models::{AgentInstalls, LeaderboardSkill, LockfileEntry, MarketplaceSkill, SkillAudit, SkillDiff, SkillMetadata, SkillUpdate};
 use crate::services::{lockfile, skills_cli};
 
 #[tauri::command]
@@ -303,4 +303,173 @@ pub async fn fetch_leaderboard(tab: String) -> Result<Vec<LeaderboardSkill>, App
         .collect();
 
     Ok(skills)
+}
+
+#[tauri::command]
+pub async fn fetch_skill_metadata(source: String, skill: String) -> Result<SkillMetadata, AppError> {
+    let url = format!("https://skills.sh/{source}/{skill}");
+
+    let body = reqwest::Client::new()
+        .get(&url)
+        .header("User-Agent", "anvil")
+        .header("rsc", "1")
+        .header("next-url", format!("/{source}/{skill}"))
+        .send()
+        .await
+        .map_err(|e| AppError::CliError(format!("Failed to fetch skill page: {e}")))?
+        .text()
+        .await
+        .map_err(|e| AppError::CliError(format!("Failed to read skill page: {e}")))?;
+
+    // Extract summary HTML from dangerouslySetInnerHTML
+    // Iterate all occurrences — skip SVG icons, find the one with <p> content
+    let summary_html = {
+        let marker = r#""dangerouslySetInnerHTML":{"__html":""#;
+        let bytes = body.as_bytes();
+        let mut search_from = 0;
+        let mut found = None;
+        while let Some(pos) = body[search_from..].find(marker) {
+            let content_start = search_from + pos + marker.len();
+            let mut i = content_start;
+            while i < bytes.len() {
+                if bytes[i] == b'"' && bytes[i - 1] != b'\\' {
+                    let html = body[content_start..i]
+                        .replace(r#"\""#, "\"")
+                        .replace(r#"\n"#, "\n");
+                    if html.contains("<p>") && html.len() > 50 {
+                        found = Some(html);
+                    }
+                    break;
+                }
+                i += 1;
+            }
+            if found.is_some() {
+                break;
+            }
+            search_from = content_start;
+        }
+        found
+    };
+
+    // Helper: find text children after a label in RSC
+    fn find_value_after(body: &str, label: &str) -> Option<String> {
+        let idx = body.find(label)?;
+        // Look for "children":"<value>" pattern after the label
+        let rest = &body[idx..];
+        let marker = r#""children":""#;
+        // Skip the label's own children, find the next value div
+        let mut search_from = 0;
+        // Find the closing of the label element, then the next children
+        for _ in 0..3 {
+            if let Some(pos) = rest[search_from..].find(marker) {
+                let val_start = search_from + pos + marker.len();
+                if let Some(end) = rest[val_start..].find('"') {
+                    let val = &rest[val_start..val_start + end];
+                    if val != label && !val.is_empty() && !val.contains("className") {
+                        return Some(val.to_string());
+                    }
+                }
+                search_from = search_from + pos + marker.len();
+            } else {
+                break;
+            }
+        }
+        None
+    }
+
+    let weekly_installs = find_value_after(&body, "Weekly Installs");
+    let github_stars = find_value_after(&body, "Github Stars")
+        .or_else(|| find_value_after(&body, "GitHub Stars"));
+    let first_seen = find_value_after(&body, "First Seen");
+
+    // Extract security audits — find "Security Audits" section, then parse name/status pairs
+    let audits = {
+        let mut result = Vec::new();
+        if let Some(section_start) = body.find("Security Audits") {
+            let section = &body[section_start..body.len().min(section_start + 2000)];
+            // Each audit is like: "children":"Gen Agent Trust Hub"}],...,"children":"Pass"
+            let audit_names = ["Gen Agent Trust Hub", "Socket", "Snyk"];
+            for name in &audit_names {
+                if let Some(name_idx) = section.find(name) {
+                    let after = &section[name_idx..section.len().min(name_idx + 300)];
+                    let status = if after.contains("Pass") || after.contains("PASS") {
+                        "PASS"
+                    } else if after.contains("Warn") || after.contains("WARN") {
+                        "WARN"
+                    } else if after.contains("Fail") || after.contains("FAIL") {
+                        "FAIL"
+                    } else {
+                        continue;
+                    };
+                    result.push(SkillAudit {
+                        name: name.to_string(),
+                        status: status.to_string(),
+                    });
+                }
+            }
+        }
+        result
+    };
+
+    // Extract "Installed on" agent breakdown
+    let installed_on = {
+        let mut result = Vec::new();
+        if let Some(section_start) = body.find("Installed on") {
+            let section = &body[section_start..];
+            // Pattern: ["$","div","<agent>",{...children:[span agent, span count]}]
+            // We look for: ,"<agent>",{"className":"flex items-center justify-between
+            let div_marker = r#"["$","div",""#;
+            let children_marker = r#""children":""#;
+            let mut search = 0;
+            while let Some(pos) = section[search..].find(div_marker) {
+                let key_start = search + pos + div_marker.len();
+                if let Some(key_end) = section[key_start..].find('"') {
+                    let agent = &section[key_start..key_start + key_end];
+                    // Skip structural divs
+                    if agent.is_empty() || agent.contains("className") {
+                        search = key_start;
+                        continue;
+                    }
+                    // Find the count value — second "children":"..." after the agent name
+                    let after_agent = &section[key_start..];
+                    let mut child_search = 0;
+                    let mut found_name = false;
+                    for _ in 0..5 {
+                        if let Some(cp) = after_agent[child_search..].find(children_marker) {
+                            let val_start = child_search + cp + children_marker.len();
+                            if let Some(val_end) = after_agent[val_start..].find('"') {
+                                let val = &after_agent[val_start..val_start + val_end];
+                                if val == agent {
+                                    found_name = true;
+                                    child_search = val_start;
+                                    continue;
+                                }
+                                if found_name && !val.is_empty() {
+                                    result.push(AgentInstalls {
+                                        agent: agent.to_string(),
+                                        count: val.to_string(),
+                                    });
+                                    break;
+                                }
+                            }
+                            child_search = child_search + cp + children_marker.len();
+                        } else {
+                            break;
+                        }
+                    }
+                }
+                search = key_start;
+            }
+        }
+        result
+    };
+
+    Ok(SkillMetadata {
+        summary_html,
+        weekly_installs,
+        github_stars,
+        first_seen,
+        audits,
+        installed_on,
+    })
 }

@@ -106,6 +106,25 @@ export interface LeaderboardSkill {
   installs: number;
 }
 
+export interface SkillMetadata {
+  summaryHtml: string | null;
+  weeklyInstalls: string | null;
+  githubStars: string | null;
+  firstSeen: string | null;
+  audits: SkillAudit[];
+  installedOn: AgentInstalls[];
+}
+
+export interface AgentInstalls {
+  agent: string;
+  count: string;
+}
+
+export interface SkillAudit {
+  name: string;
+  status: string;
+}
+
 export interface MarketplaceSkill {
   package: string;
   name: string;
