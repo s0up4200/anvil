@@ -1,7 +1,7 @@
 use tauri::AppHandle;
 
 use crate::error::AppError;
-use crate::models::{LockfileEntry, MarketplaceSkill, SkillDiff, SkillUpdate};
+use crate::models::{LeaderboardSkill, LockfileEntry, MarketplaceSkill, SkillDiff, SkillUpdate};
 use crate::services::{lockfile, skills_cli};
 
 #[tauri::command]
@@ -214,4 +214,93 @@ pub async fn diff_remote_skill(skill_name: String) -> Result<SkillDiff, AppError
         local_content,
         remote_content,
     })
+}
+
+#[tauri::command]
+pub async fn fetch_leaderboard(tab: String) -> Result<Vec<LeaderboardSkill>, AppError> {
+    let path = match tab.as_str() {
+        "trending" => "/trending",
+        "hot" => "/hot",
+        _ => "/",
+    };
+
+    let url = format!("https://skills.sh{path}");
+
+    let client = reqwest::Client::new();
+    let body = client
+        .get(&url)
+        .header("User-Agent", "anvil")
+        .header("rsc", "1")
+        .header("next-router-prefetch", "1")
+        .header("next-url", path)
+        .header(
+            "next-router-segment-prefetch",
+            if path == "/" {
+                "/!KGhvbWUp/__PAGE__".to_string()
+            } else {
+                format!("/!KGhvbWUp{path}/__PAGE__")
+            },
+        )
+        .send()
+        .await
+        .map_err(|e| AppError::CliError(format!("Failed to fetch leaderboard: {e}")))?
+        .text()
+        .await
+        .map_err(|e| AppError::CliError(format!("Failed to read leaderboard response: {e}")))?;
+
+    // Extract the initialSkills JSON array from the RSC payload
+    let marker = "\"initialSkills\":";
+    let start = body
+        .find(marker)
+        .ok_or_else(|| AppError::CliError("Leaderboard data not found in response".into()))?
+        + marker.len();
+
+    // Find the matching closing bracket
+    let bytes = body.as_bytes();
+    let mut depth = 0i32;
+    let mut end = start;
+    for (i, &b) in bytes[start..].iter().enumerate() {
+        match b {
+            b'[' => depth += 1,
+            b']' => {
+                depth -= 1;
+                if depth == 0 {
+                    end = start + i + 1;
+                    break;
+                }
+            }
+            _ => {}
+        }
+    }
+
+    if depth != 0 {
+        return Err(AppError::CliError(
+            "Failed to parse leaderboard JSON array".into(),
+        ));
+    }
+
+    let json_str = &body[start..end];
+
+    #[derive(serde::Deserialize)]
+    struct RawSkill {
+        source: String,
+        name: String,
+        installs: u64,
+    }
+
+    let raw: Vec<RawSkill> = serde_json::from_str(json_str)
+        .map_err(|e| AppError::CliError(format!("Failed to parse leaderboard skills: {e}")))?;
+
+    let skills = raw
+        .into_iter()
+        .enumerate()
+        .map(|(i, s)| LeaderboardSkill {
+            rank: i + 1,
+            name: s.name,
+            source: s.source,
+            installs: s.installs,
+        })
+        .collect();
+
+    Ok(skills)
 }

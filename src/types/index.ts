@@ -99,6 +99,13 @@ export interface SkillChangeEvent {
 // Marketplace (Phase 2)
 // ---------------------------------------------------------------------------
 
+export interface LeaderboardSkill {
+  rank: number;
+  name: string;
+  source: string;
+  installs: number;
+}
+
 export interface MarketplaceSkill {
   package: string;
   name: string;

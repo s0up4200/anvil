@@ -32,6 +32,15 @@ pub struct SkillDiff {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct LeaderboardSkill {
+    pub rank: usize,
+    pub name: String,
+    pub source: String,
+    pub installs: u64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct LockfileEntry {
     pub source: String,
     #[serde(default)]

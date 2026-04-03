@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { useMarketplace } from "@/hooks/useMarketplace"
 import { SkillCard } from "./SkillCard"
+import { SkillsLeaderboard } from "./SkillsLeaderboard"
 import { MarketplaceInstallDialog } from "./MarketplaceInstallDialog"
 import { SkillDetailDialog } from "./SkillDetailDialog"
 import type { MarketplaceSkill } from "@/types"
@@ -31,6 +32,9 @@ export function MarketplaceBrowser() {
     setDetailOpen(true)
   }
 
+  const hasQuery = query.trim().length > 0
+  const showLeaderboard = !hasQuery && !isSearching && results.length === 0
+
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
       {/* Header */}
@@ -58,50 +62,46 @@ export function MarketplaceBrowser() {
         </div>
       )}
 
-      {/* Content */}
-      <ScrollArea className="flex-1">
-        <div className="p-4">
-          {isSearching && (
-            <p className="text-sm text-muted-foreground animate-pulse">
-              Searching…
-            </p>
-          )}
+      {/* Leaderboard (empty state) */}
+      {showLeaderboard && (
+        <SkillsLeaderboard onInstall={handleInstall} onRead={handleRead} />
+      )}
 
-          {searchError && (
-            <p className="text-sm text-destructive">{searchError}</p>
-          )}
+      {/* Search results */}
+      {!showLeaderboard && (
+        <ScrollArea className="flex-1">
+          <div className="p-4">
+            {isSearching && (
+              <p className="text-sm text-muted-foreground animate-pulse">
+                Searching…
+              </p>
+            )}
 
-          {!isSearching && !searchError && results.length === 0 && query.trim() && (
-            <p className="text-sm text-muted-foreground">
-              No skills found for &ldquo;{query}&rdquo;
-            </p>
-          )}
+            {searchError && (
+              <p className="text-sm text-destructive">{searchError}</p>
+            )}
 
-          {!isSearching && !searchError && results.length === 0 && !query.trim() && (
-            <div className="flex flex-col items-center justify-center gap-2 py-16 text-center">
+            {!isSearching && !searchError && results.length === 0 && hasQuery && (
               <p className="text-sm text-muted-foreground">
-                Search for skills from the skills.sh registry
+                No skills found for &ldquo;{query}&rdquo;
               </p>
-              <p className="text-xs text-muted-foreground">
-                Try &ldquo;resend&rdquo;, &ldquo;clerk&rdquo;, or &ldquo;vercel&rdquo;
-              </p>
-            </div>
-          )}
+            )}
 
-          {results.length > 0 && (
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
-              {results.map((skill) => (
-                <SkillCard
-                  key={skill.package}
-                  skill={skill}
-                  onInstall={handleInstall}
-                  onRead={handleRead}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      </ScrollArea>
+            {results.length > 0 && (
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+                {results.map((skill) => (
+                  <SkillCard
+                    key={skill.package}
+                    skill={skill}
+                    onInstall={handleInstall}
+                    onRead={handleRead}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </ScrollArea>
+      )}
 
       <SkillDetailDialog
         skill={detailTarget}

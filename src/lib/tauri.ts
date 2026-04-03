@@ -5,6 +5,7 @@ import type {
   SkillFrontmatter,
   AppConfig,
   MarketplaceSkill,
+  LeaderboardSkill,
   SkillUpdate,
   SkillDiff,
   LockfileEntry,
@@ -159,4 +160,9 @@ export function fetchMarketplaceSkillContent(pkg: string): Promise<string> {
 /** Fetch the diff between local and remote versions of a skill. */
 export function diffRemoteSkill(skillName: string): Promise<SkillDiff> {
   return invoke<SkillDiff>("diff_remote_skill", { skillName });
+}
+
+/** Fetch the skills.sh leaderboard. Tab: "all" | "trending" | "hot". */
+export function fetchLeaderboard(tab: string): Promise<LeaderboardSkill[]> {
+  return invoke<LeaderboardSkill[]>("fetch_leaderboard", { tab });
 }

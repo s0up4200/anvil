@@ -31,6 +31,7 @@ pub fn run() {
             commands::marketplace::read_skill_lockfile,
             commands::marketplace::diff_remote_skill,
             commands::marketplace::fetch_marketplace_skill_content,
+            commands::marketplace::fetch_leaderboard,
         ])
         .setup(|app| {
             let handle = app.handle().clone();
