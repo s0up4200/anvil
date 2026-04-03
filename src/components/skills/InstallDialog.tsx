@@ -9,7 +9,6 @@ import {
 } from "@/components/ui/dialog"
 import { useAgentStore } from "@/stores/agentStore"
 import { installSkillToAgent } from "@/lib/tauri"
-import { getAgentDisplayName } from "@/lib/constants"
 import type { Skill } from "@/types"
 import { getErrorMessage } from "@/lib/utils"
 
@@ -128,7 +127,7 @@ export function InstallDialog({
                         onChange={() => toggleAgent(agent.id)}
                         className="h-4 w-4 rounded border-input accent-foreground"
                       />
-                      <span>{getAgentDisplayName(agent.id)}</span>
+                      <span>{agent.name}</span>
                       {agent.skillsPath && (
                         <span className="truncate text-xs text-muted-foreground">
                           {agent.skillsPath}

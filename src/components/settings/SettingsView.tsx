@@ -10,7 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { useUIStore, type Theme } from "@/stores/uiStore"
 import { useAgentStore } from "@/stores/agentStore"
 import { getConfig, saveConfig } from "@/lib/tauri"
-import { getAgentDisplayName, getAgentColor } from "@/lib/constants"
+import { getAgentColor } from "@/lib/constants"
 import { cn } from "@/lib/utils"
 import {
   Sun,
@@ -204,11 +204,11 @@ export function SettingsView() {
                     >
                       <span
                         className="size-2 shrink-0 rounded-full"
-                        style={{ backgroundColor: getAgentColor(agent.id) }}
+                        style={{ backgroundColor: getAgentColor(agent) }}
                       />
                       <div className="flex flex-col gap-0.5 min-w-0 flex-1">
                         <span className="text-xs font-medium text-foreground">
-                          {getAgentDisplayName(agent.id)}
+                          {agent.name}
                         </span>
                         {agent.skillsPath ? (
                           <span className="truncate text-[11px] text-muted-foreground font-mono">

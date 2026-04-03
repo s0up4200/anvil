@@ -379,11 +379,13 @@ mod tests {
                 id: "agent-a".to_string(),
                 name: "Agent A".to_string(),
                 skills_path: Some(real_skills),
+                color: None,
             },
             Agent {
                 id: "agent-b".to_string(),
                 name: "Agent B".to_string(),
                 skills_path: Some(agent_b_skills),
+                color: None,
             },
         ];
 

@@ -1,0 +1,270 @@
+[
+  {
+    "id": "amp",
+    "name": "Amp",
+    "skills_path": ".config/agents/skills",
+    "detect_paths": [".config/amp"],
+    "color": "#FF6B35"
+  },
+  {
+    "id": "antigravity",
+    "name": "Antigravity",
+    "skills_path": ".gemini/antigravity/skills",
+    "detect_paths": [".gemini/antigravity"]
+  },
+  {
+    "id": "augment",
+    "name": "Augment",
+    "skills_path": ".augment/skills",
+    "detect_paths": [".augment"]
+  },
+  {
+    "id": "bob",
+    "name": "IBM Bob",
+    "skills_path": ".bob/skills",
+    "detect_paths": [".bob"]
+  },
+  {
+    "id": "claude-code",
+    "name": "Claude Code",
+    "skills_path": ".claude/skills",
+    "detect_paths": [".claude"],
+    "detect_env": "CLAUDE_CONFIG_DIR",
+    "color": "#D97757"
+  },
+  {
+    "id": "cline",
+    "name": "Cline",
+    "skills_path": ".agents/skills",
+    "detect_paths": [".cline"]
+  },
+  {
+    "id": "codebuddy",
+    "name": "CodeBuddy",
+    "skills_path": ".codebuddy/skills",
+    "detect_paths": [".codebuddy"]
+  },
+  {
+    "id": "codex",
+    "name": "Codex",
+    "skills_path": ".codex/skills",
+    "detect_paths": [".codex"],
+    "detect_env": "CODEX_HOME",
+    "color": "#10A37F"
+  },
+  {
+    "id": "command-code",
+    "name": "Command Code",
+    "skills_path": ".commandcode/skills",
+    "detect_paths": [".commandcode"]
+  },
+  {
+    "id": "continue",
+    "name": "Continue",
+    "skills_path": ".continue/skills",
+    "detect_paths": [".continue"]
+  },
+  {
+    "id": "cortex",
+    "name": "Cortex Code",
+    "skills_path": ".snowflake/cortex/skills",
+    "detect_paths": [".snowflake/cortex"]
+  },
+  {
+    "id": "crush",
+    "name": "Crush",
+    "skills_path": ".config/crush/skills",
+    "detect_paths": [".config/crush"]
+  },
+  {
+    "id": "cursor",
+    "name": "Cursor",
+    "skills_path": ".cursor/skills",
+    "detect_paths": [".cursor"],
+    "color": "#F5A623"
+  },
+  {
+    "id": "deepagents",
+    "name": "Deep Agents",
+    "skills_path": ".deepagents/agent/skills",
+    "detect_paths": [".deepagents"]
+  },
+  {
+    "id": "droid",
+    "name": "Droid",
+    "skills_path": ".factory/skills",
+    "detect_paths": [".factory"]
+  },
+  {
+    "id": "firebender",
+    "name": "Firebender",
+    "skills_path": ".firebender/skills",
+    "detect_paths": [".firebender"]
+  },
+  {
+    "id": "gemini-cli",
+    "name": "Gemini CLI",
+    "skills_path": ".gemini/skills",
+    "detect_paths": [".gemini"],
+    "color": "#4285F4"
+  },
+  {
+    "id": "github-copilot",
+    "name": "GitHub Copilot",
+    "skills_path": ".copilot/skills",
+    "detect_paths": [".copilot"],
+    "color": "#1F6FEB"
+  },
+  {
+    "id": "goose",
+    "name": "Goose",
+    "skills_path": ".config/goose/skills",
+    "detect_paths": [".config/goose"]
+  },
+  {
+    "id": "iflow-cli",
+    "name": "iFlow CLI",
+    "skills_path": ".iflow/skills",
+    "detect_paths": [".iflow"]
+  },
+  {
+    "id": "junie",
+    "name": "Junie",
+    "skills_path": ".junie/skills",
+    "detect_paths": [".junie"]
+  },
+  {
+    "id": "kilo",
+    "name": "Kilo Code",
+    "skills_path": ".kilocode/skills",
+    "detect_paths": [".kilocode"]
+  },
+  {
+    "id": "kimi-cli",
+    "name": "Kimi Code CLI",
+    "skills_path": ".config/agents/skills",
+    "detect_paths": [".kimi"]
+  },
+  {
+    "id": "kiro-cli",
+    "name": "Kiro CLI",
+    "skills_path": ".kiro/skills",
+    "detect_paths": [".kiro"]
+  },
+  {
+    "id": "kode",
+    "name": "Kode",
+    "skills_path": ".kode/skills",
+    "detect_paths": [".kode"]
+  },
+  {
+    "id": "mcpjam",
+    "name": "MCPJam",
+    "skills_path": ".mcpjam/skills",
+    "detect_paths": [".mcpjam"]
+  },
+  {
+    "id": "mistral-vibe",
+    "name": "Mistral Vibe",
+    "skills_path": ".vibe/skills",
+    "detect_paths": [".vibe"]
+  },
+  {
+    "id": "mux",
+    "name": "Mux",
+    "skills_path": ".mux/skills",
+    "detect_paths": [".mux"]
+  },
+  {
+    "id": "openclaw",
+    "name": "OpenClaw",
+    "skills_path": ".openclaw/skills",
+    "detect_paths": [".openclaw", ".clawdbot", ".moltbot"]
+  },
+  {
+    "id": "opencode",
+    "name": "OpenCode",
+    "skills_path": ".config/opencode/skills",
+    "detect_paths": [".config/opencode"],
+    "color": "#6366F1"
+  },
+  {
+    "id": "openhands",
+    "name": "OpenHands",
+    "skills_path": ".openhands/skills",
+    "detect_paths": [".openhands"]
+  },
+  {
+    "id": "pi",
+    "name": "Pi",
+    "skills_path": ".pi/agent/skills",
+    "detect_paths": [".pi/agent"]
+  },
+  {
+    "id": "pochi",
+    "name": "Pochi",
+    "skills_path": ".pochi/skills",
+    "detect_paths": [".pochi"]
+  },
+  {
+    "id": "qoder",
+    "name": "Qoder",
+    "skills_path": ".qoder/skills",
+    "detect_paths": [".qoder"]
+  },
+  {
+    "id": "qwen-code",
+    "name": "Qwen Code",
+    "skills_path": ".qwen/skills",
+    "detect_paths": [".qwen"]
+  },
+  {
+    "id": "adal",
+    "name": "AdaL",
+    "skills_path": ".adal/skills",
+    "detect_paths": [".adal"]
+  },
+  {
+    "id": "neovate",
+    "name": "Neovate",
+    "skills_path": ".neovate/skills",
+    "detect_paths": [".neovate"]
+  },
+  {
+    "id": "roo",
+    "name": "Roo Code",
+    "skills_path": ".roo/skills",
+    "detect_paths": [".roo"]
+  },
+  {
+    "id": "trae",
+    "name": "Trae",
+    "skills_path": ".trae/skills",
+    "detect_paths": [".trae"]
+  },
+  {
+    "id": "trae-cn",
+    "name": "Trae CN",
+    "skills_path": ".trae-cn/skills",
+    "detect_paths": [".trae-cn"]
+  },
+  {
+    "id": "warp",
+    "name": "Warp",
+    "skills_path": ".agents/skills",
+    "detect_paths": [".warp"]
+  },
+  {
+    "id": "windsurf",
+    "name": "Windsurf",
+    "skills_path": ".codeium/windsurf/skills",
+    "detect_paths": [".codeium/windsurf"],
+    "color": "#00D1B2"
+  },
+  {
+    "id": "zencoder",
+    "name": "Zencoder",
+    "skills_path": ".zencoder/skills",
+    "detect_paths": [".zencoder"]
+  }
+]

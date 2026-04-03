@@ -11,7 +11,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { Badge } from "@/components/ui/badge"
-import { getAgentColor, getAgentDisplayName } from "@/lib/constants"
+import { DEFAULT_AGENT_COLOR } from "@/lib/constants"
+import { useAgentStore } from "@/stores/agentStore"
 import { cn } from "@/lib/utils"
 import type { Skill, SkillUpdate } from "@/types"
 
@@ -38,6 +39,8 @@ export function SkillRow({
   onInstall,
   className,
 }: SkillRowProps) {
+  const agents = useAgentStore((s) => s.agents)
+  const agentById = (id: string) => agents.find((a) => a.id === id)
   return (
     <ContextMenu>
       <ContextMenuTrigger>
@@ -68,17 +71,20 @@ export function SkillRow({
               )}
             </span>
             <div className="flex shrink-0 items-center gap-0.5">
-              {skill.agentIds.map((agentId) => (
-                <Tooltip key={agentId}>
-                  <TooltipTrigger>
-                    <span
-                      className="size-1.5 rounded-full block"
-                      style={{ backgroundColor: getAgentColor(agentId) }}
-                    />
-                  </TooltipTrigger>
-                  <TooltipContent>{getAgentDisplayName(agentId)}</TooltipContent>
-                </Tooltip>
-              ))}
+              {skill.agentIds.map((agentId) => {
+                const agent = agentById(agentId)
+                return (
+                  <Tooltip key={agentId}>
+                    <TooltipTrigger>
+                      <span
+                        className="size-1.5 rounded-full block"
+                        style={{ backgroundColor: agent?.color ?? DEFAULT_AGENT_COLOR }}
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent>{agent?.name ?? agentId}</TooltipContent>
+                  </Tooltip>
+                )
+              })}
             </div>
           </div>
 

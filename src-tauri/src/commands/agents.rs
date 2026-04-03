@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::commands::settings::load_config_from_disk;
-use crate::models::agent::{known_agents, Agent};
+use crate::models::agent::{agent_defs, is_agent_detected, resolve_skills_path, Agent};
 
 /// An `Agent` augmented with a runtime `detected` flag indicating whether its
 /// skills directory exists on disk.
@@ -11,25 +11,27 @@ pub struct DetectedAgent {
     #[serde(flatten)]
     pub agent: Agent,
 
-    /// `true` when `skills_path` exists on the filesystem.
+    /// `true` when the agent's config directory exists on the filesystem.
     pub detected: bool,
 }
 
-/// Returns all known agents, each annotated with whether its skills directory
-/// currently exists on disk.  Undetected agents are included so the frontend
-/// can display them in a grayed-out state.
+/// Returns all known agents, each annotated with whether the agent is installed.
+/// Only detected agents (plus custom agents) are typically shown in the UI.
 #[tauri::command]
 pub fn detect_agents() -> Result<Vec<DetectedAgent>, String> {
-    let agents = known_agents();
+    let home = dirs::home_dir();
 
-    let mut result: Vec<DetectedAgent> = agents
+    let mut result: Vec<DetectedAgent> = agent_defs()
         .into_iter()
-        .map(|agent| {
-            let detected = agent
-                .skills_path
-                .as_ref()
-                .map(|p| p.exists())
-                .unwrap_or(false);
+        .map(|def| {
+            let detected = is_agent_detected(&def, home.as_ref());
+            let skills_path = resolve_skills_path(&def, home.as_ref());
+            let agent = Agent {
+                id: def.id,
+                name: def.name,
+                skills_path,
+                color: def.color,
+            };
             DetectedAgent { agent, detected }
         })
         .collect();
@@ -43,6 +45,7 @@ pub fn detect_agents() -> Result<Vec<DetectedAgent>, String> {
                 id: ca.id,
                 name: ca.name,
                 skills_path: Some(ca.skills_path),
+                color: None,
             },
             detected,
         });

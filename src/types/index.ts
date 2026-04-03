@@ -14,8 +14,10 @@ export interface Agent {
   name: string;
   /** Absolute path to the agent's skills directory. Null when home dir cannot be resolved. */
   skillsPath: string | null;
-  /** Whether the skills directory currently exists on disk. */
+  /** Whether the agent is installed on this machine. */
   detected: boolean;
+  /** Brand color hex string, if known. */
+  color?: string;
 }
 
 // ---------------------------------------------------------------------------

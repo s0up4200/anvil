@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/dialog"
 import { useAgentStore } from "@/stores/agentStore"
 import { createSkill, getConfig } from "@/lib/tauri"
-import { getAgentDisplayName } from "@/lib/constants"
 import { getErrorMessage } from "@/lib/utils"
 
 interface CreateSkillDialogProps {
@@ -151,7 +150,7 @@ export function CreateSkillDialog({
               >
                 {detectedAgents.map((agent) => (
                   <option key={agent.id} value={agent.id}>
-                    {getAgentDisplayName(agent.id)}
+                    {agent.name}
                   </option>
                 ))}
               </select>

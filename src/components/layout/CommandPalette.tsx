@@ -12,7 +12,6 @@ import {
 import { useUIStore } from "@/stores/uiStore"
 import { useSkillStore } from "@/stores/skillStore"
 import { useAgentStore } from "@/stores/agentStore"
-import { getAgentDisplayName } from "@/lib/constants"
 
 export function CommandPalette() {
   const { commandPaletteOpen, setCommandPaletteOpen, theme, setTheme, setSettingsOpen, setActiveView } =
@@ -86,7 +85,7 @@ export function CommandPalette() {
                     value={`agent-${agent.id}`}
                     onSelect={() => filterByAgent(agent.id)}
                   >
-                    {getAgentDisplayName(agent.id)}
+                    {agent.name}
                   </CommandItem>
                 ))}
               </CommandGroup>

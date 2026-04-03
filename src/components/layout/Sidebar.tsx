@@ -1,12 +1,25 @@
-import { Settings, Store, RefreshCw } from "lucide-react"
+import { useMemo } from "react"
+import { Copy, Settings, Store, RefreshCw } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { useAgentStore } from "@/stores/agentStore"
 import { useSkillStore } from "@/stores/skillStore"
 import { useUIStore } from "@/stores/uiStore"
 import { useUpdateStore } from "@/stores/updateStore"
-import { getAgentColor, getAgentDisplayName } from "@/lib/constants"
+import { getAgentColor } from "@/lib/constants"
 import { cn } from "@/lib/utils"
+import type { Agent } from "@/types"
 
 export function Sidebar() {
   const { agents, selectedAgentId, setSelectedAgentId } = useAgentStore()
@@ -18,6 +31,78 @@ export function Sidebar() {
 
   function countForAgent(agentId: string): number {
     return skills.filter((s) => s.agentIds.includes(agentId)).length
+  }
+
+  const { withSkills, empty } = useMemo(() => {
+    const detected = agents.filter((a) => a.detected)
+    const w: (Agent & { count: number })[] = []
+    const e: (Agent & { count: number })[] = []
+    for (const agent of detected) {
+      const count = countForAgent(agent.id)
+      if (count > 0) w.push({ ...agent, count })
+      else e.push({ ...agent, count: 0 })
+    }
+    w.sort((a, b) => a.name.localeCompare(b.name))
+    e.sort((a, b) => a.name.localeCompare(b.name))
+    return { withSkills: w, empty: e }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [agents, skills])
+
+  function copyPath(path: string) {
+    navigator.clipboard.writeText(path)
+  }
+
+  function renderAgentRow(agent: Agent & { count: number }, dimmed: boolean) {
+    const color = getAgentColor(agent)
+    const isActive = activeView === "skills" && selectedAgentId === agent.id
+
+    return (
+      <ContextMenu key={agent.id}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <ContextMenuTrigger asChild>
+              <button
+                type="button"
+                onClick={() => { setSelectedAgentId(agent.id); setActiveView("skills") }}
+                className={cn(
+                  "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors",
+                  isActive
+                    ? "bg-accent text-accent-foreground font-medium"
+                    : dimmed
+                      ? "text-muted-foreground hover:bg-muted"
+                      : "text-foreground hover:bg-muted"
+                )}
+              >
+                <span
+                  className={cn("size-2 shrink-0 rounded-full", dimmed && "opacity-50")}
+                  style={{ backgroundColor: color }}
+                  aria-hidden="true"
+                />
+                <span className="flex-1 truncate text-left">{agent.name}</span>
+                {agent.count > 0 && (
+                  <Badge variant="secondary" className="tabular-nums">
+                    {agent.count}
+                  </Badge>
+                )}
+              </button>
+            </ContextMenuTrigger>
+          </TooltipTrigger>
+          {agent.skillsPath && (
+            <TooltipContent side="right" className="font-mono text-[11px]">
+              {agent.skillsPath}
+            </TooltipContent>
+          )}
+        </Tooltip>
+        {agent.skillsPath && (
+          <ContextMenuContent>
+            <ContextMenuItem onClick={() => copyPath(agent.skillsPath!)}>
+              <Copy className="mr-2 size-3.5" />
+              Copy skills path
+            </ContextMenuItem>
+          </ContextMenuContent>
+        )}
+      </ContextMenu>
+    )
   }
 
   return (
@@ -41,45 +126,18 @@ export function Sidebar() {
           </Badge>
         </button>
 
-        {/* Per-agent rows */}
-        {agents.map((agent) => {
-          const color = getAgentColor(agent.id)
-          const displayName = getAgentDisplayName(agent.id)
-          const count = countForAgent(agent.id)
-          const isActive = selectedAgentId === agent.id
-          const isDetected = agent.detected
+        {/* Agents with skills */}
+        {withSkills.map((agent) => renderAgentRow(agent, false))}
 
-          return (
-            <button
-              key={agent.id}
-              type="button"
-              disabled={!isDetected}
-              onClick={() => { setSelectedAgentId(agent.id); setActiveView("skills") }}
-              className={cn(
-                "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors",
-                activeView === "skills" && isActive
-                  ? "bg-accent text-accent-foreground font-medium"
-                  : isDetected
-                    ? "text-foreground hover:bg-muted"
-                    : "cursor-not-allowed text-muted-foreground opacity-50"
-              )}
-            >
-              {/* Colored dot */}
-              <span
-                className="size-2 shrink-0 rounded-full"
-                style={{ backgroundColor: isDetected ? color : undefined }}
-                aria-hidden="true"
-              />
-              <span className="sr-only">{isDetected ? "Detected" : "Not detected"}</span>
-              <span className="flex-1 truncate text-left">{displayName}</span>
-              {isDetected && (
-                <Badge variant="secondary" className="tabular-nums">
-                  {count}
-                </Badge>
-              )}
-            </button>
-          )
-        })}
+        {/* Empty agents */}
+        {empty.length > 0 && (
+          <>
+            <span className="mt-3 mb-1 px-2 text-[11px] font-medium text-muted-foreground/60 uppercase tracking-wider">
+              Installed — no skills
+            </span>
+            {empty.map((agent) => renderAgentRow(agent, true))}
+          </>
+        )}
       </nav>
 
       {/* Bottom nav */}
