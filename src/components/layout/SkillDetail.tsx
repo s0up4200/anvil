@@ -71,9 +71,10 @@ export function SkillDetail() {
     } catch (err) {
       setError(getErrorMessage(err))
     } finally {
-      const elapsed = Date.now() - start
-      if (elapsed < 300) {
-        setTimeout(() => setIsSaving(false), 300 - elapsed)
+      // Keep the saving indicator visible for at least 300ms to avoid a flash
+      const remaining = 300 - (Date.now() - start)
+      if (remaining > 0) {
+        setTimeout(() => setIsSaving(false), remaining)
       } else {
         setIsSaving(false)
       }

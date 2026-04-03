@@ -1,7 +1,7 @@
-import * as React from "react"
+import type { ButtonHTMLAttributes } from "react"
 import { cn } from "@/lib/utils"
 
-interface SwitchProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface SwitchProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   checked?: boolean
   onCheckedChange?: (checked: boolean) => void
 }

@@ -140,6 +140,7 @@ export function SkillList() {
           </div>
         )}
 
+        <TooltipProvider delay={200}>
         {!isLoading &&
           skills.map((skill) => (
             <ContextMenu key={skill.id}>
@@ -169,21 +170,19 @@ export function SkillList() {
                         </>
                       )}
                     </span>
-                    <TooltipProvider delay={200}>
-                      <div className="flex shrink-0 items-center gap-0.5">
-                        {skill.agentIds.map((agentId) => (
-                          <Tooltip key={agentId}>
-                            <TooltipTrigger>
-                              <span
-                                className="size-1.5 rounded-full block"
-                                style={{ backgroundColor: getAgentColor(agentId) }}
-                              />
-                            </TooltipTrigger>
-                            <TooltipContent>{getAgentDisplayName(agentId)}</TooltipContent>
-                          </Tooltip>
-                        ))}
-                      </div>
-                    </TooltipProvider>
+                    <div className="flex shrink-0 items-center gap-0.5">
+                      {skill.agentIds.map((agentId) => (
+                        <Tooltip key={agentId}>
+                          <TooltipTrigger>
+                            <span
+                              className="size-1.5 rounded-full block"
+                              style={{ backgroundColor: getAgentColor(agentId) }}
+                            />
+                          </TooltipTrigger>
+                          <TooltipContent>{getAgentDisplayName(agentId)}</TooltipContent>
+                        </Tooltip>
+                      ))}
+                    </div>
                   </div>
 
                   {/* Description */}
@@ -227,6 +226,7 @@ export function SkillList() {
               </ContextMenuContent>
             </ContextMenu>
           ))}
+        </TooltipProvider>
       </div>
 
       <InstallDialog

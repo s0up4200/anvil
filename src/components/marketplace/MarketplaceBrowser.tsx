@@ -6,8 +6,11 @@ import { useMarketplace } from "@/hooks/useMarketplace"
 import { SkillCard } from "./SkillCard"
 import { SkillsLeaderboard } from "./SkillsLeaderboard"
 import { MarketplaceInstallDialog } from "./MarketplaceInstallDialog"
-const SkillDetailDialog = lazy(() => import("./SkillDetailDialog").then(m => ({ default: m.SkillDetailDialog })))
 import type { MarketplaceSkill } from "@/types"
+
+const SkillDetailDialog = lazy(() =>
+  import("./SkillDetailDialog").then((m) => ({ default: m.SkillDetailDialog }))
+)
 
 export function MarketplaceBrowser() {
   const { results, query, isSearching, searchError, cliAvailable, search } =
@@ -95,19 +98,19 @@ export function MarketplaceBrowser() {
 
             {results.length > 0 && (
               <>
-              <p className="pb-2 text-xs text-muted-foreground">
-                {results.length} {results.length === 1 ? "result" : "results"}
-              </p>
-              <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
-                {results.map((skill) => (
-                  <SkillCard
-                    key={skill.package}
-                    skill={skill}
-                    onInstall={handleInstall}
-                    onRead={handleRead}
-                  />
-                ))}
-              </div>
+                <p className="pb-2 text-xs text-muted-foreground">
+                  {results.length} {results.length === 1 ? "result" : "results"}
+                </p>
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+                  {results.map((skill) => (
+                    <SkillCard
+                      key={skill.package}
+                      skill={skill}
+                      onInstall={handleInstall}
+                      onRead={handleRead}
+                    />
+                  ))}
+                </div>
               </>
             )}
           </div>
