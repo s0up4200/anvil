@@ -50,7 +50,7 @@ export function SkillsLeaderboard({ onInstall, onRead }: SkillsLeaderboardProps)
   ]
 
   return (
-    <div className="flex flex-1 flex-col overflow-hidden">
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
       {/* Tabs */}
       <TooltipProvider delay={200}>
         <div className="flex items-center gap-1 px-4 pt-3 pb-2">
@@ -86,7 +86,7 @@ export function SkillsLeaderboard({ onInstall, onRead }: SkillsLeaderboardProps)
       </div>
 
       {/* Content */}
-      <ScrollArea className="flex-1">
+      <ScrollArea className="min-h-0 flex-1">
         <div className="px-4 pb-4">
           {isLoading && (
             <p className="text-sm text-muted-foreground animate-pulse px-3 py-4">

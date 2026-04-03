@@ -40,7 +40,7 @@ export function MarketplaceBrowser() {
   const showLeaderboard = !hasQuery && !isSearching && results.length === 0
 
   return (
-    <div className="flex flex-1 flex-col overflow-hidden">
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
       {/* Header */}
       <div className="flex items-center gap-3 border-b border-border px-4 py-3">
         <h2 className="text-sm font-semibold text-foreground">Marketplace</h2>
@@ -73,7 +73,7 @@ export function MarketplaceBrowser() {
 
       {/* Search results */}
       {!showLeaderboard && (
-        <ScrollArea className="flex-1">
+        <ScrollArea className="min-h-0 flex-1">
           <div className="p-4">
             {isSearching && (
               <p className="text-sm text-muted-foreground animate-pulse">

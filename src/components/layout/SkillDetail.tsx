@@ -115,14 +115,14 @@ export function SkillDetail() {
 
   if (!selectedSkill) {
     return (
-      <div className="flex flex-1 items-center justify-center bg-background text-muted-foreground">
+      <div className="flex flex-1 items-center justify-center text-muted-foreground">
         <p className="text-sm">Select a skill to view</p>
       </div>
     )
   }
 
   return (
-    <div className="flex flex-1 flex-col overflow-hidden bg-background">
+    <div className="flex flex-1 flex-col min-h-0 overflow-hidden">
       {/* Header */}
       <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-2">
         <div className="flex items-center gap-2">
@@ -210,7 +210,7 @@ export function SkillDetail() {
         </div>
       ) : (
         /* Editable form + code editor */
-        <div className="flex flex-1 flex-col overflow-auto">
+        <div className="flex flex-1 flex-col min-h-0 overflow-auto">
           <FrontmatterForm
             name={selectedSkill.name}
             onNameChange={() => {}}
@@ -221,7 +221,7 @@ export function SkillDetail() {
 
           <div className="mx-4 mb-2 border-t border-border" />
 
-          <div className="flex-1 overflow-auto">
+          <div className="flex-1">
             <SkillEditor value={body} onChange={setBody} theme={resolvedTheme} />
           </div>
         </div>

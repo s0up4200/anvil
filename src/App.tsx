@@ -48,7 +48,7 @@ export default function App() {
   }, [theme])
 
   return (
-    <main className="flex h-screen min-w-0 bg-background text-foreground">
+    <main className="flex h-full min-w-0 overflow-hidden">
       <Sidebar />
       {activeView === "skills" && (
         <>

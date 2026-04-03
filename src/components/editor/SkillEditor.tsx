@@ -36,7 +36,7 @@ export function SkillEditor({ value, onChange, readOnly = false, theme = "dark" 
         autocompletion: true,
         searchKeymap: true,
       }}
-      className="h-full overflow-auto text-sm"
+      className="h-full text-sm"
     />
   )
 }
