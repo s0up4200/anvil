@@ -79,7 +79,7 @@ export function SkillsLeaderboard({ onInstall, onRead }: SkillsLeaderboardProps)
       </TooltipProvider>
 
       {/* Table header */}
-      <div className="grid grid-cols-[2.5rem_1fr_auto] gap-2 px-4 pb-1 text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+      <div className="grid grid-cols-[2.5rem_1fr_auto] gap-2 px-6 pb-1 text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
         <span>#</span>
         <span>Skill</span>
         <span className="text-right">Installs</span>
@@ -111,27 +111,24 @@ export function SkillsLeaderboard({ onInstall, onRead }: SkillsLeaderboardProps)
                 key={`${skill.source}/${skill.name}`}
                 type="button"
                 onClick={() => onRead(ms)}
-                className="grid w-full grid-cols-[2.5rem_1fr_auto] gap-2 items-center rounded-md px-0 py-1.5 text-left transition-colors hover:bg-muted group"
+                className="grid w-full grid-cols-[2.5rem_1fr_auto] gap-2 items-center rounded-md px-2 py-1.5 text-left transition-colors hover:bg-muted group"
               >
-                <span className="text-xs tabular-nums text-muted-foreground pl-1">
+                <span className="text-xs tabular-nums text-muted-foreground">
                   {skill.rank}
                 </span>
-                <div className="min-w-0">
-                  <span className="block truncate text-sm font-medium text-foreground" title={skill.name}>
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <span className="truncate text-sm font-medium text-foreground" title={skill.name}>
                     {skill.name}
                   </span>
-                  <span className="block truncate text-xs text-muted-foreground" title={skill.source}>
+                  <span className="shrink-0 text-xs text-muted-foreground" title={skill.source}>
                     {skill.source}
                   </span>
                 </div>
                 <div className="flex items-center justify-end gap-2">
-                  <span className="text-xs tabular-nums text-muted-foreground">
-                    {formatInstalls(skill.installs)}
-                  </span>
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-6 px-2 text-xs opacity-0 group-hover:opacity-100 focus:opacity-100 group-focus-within:opacity-100 transition-opacity"
+                    className="h-6 px-2 text-xs opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity"
                     onClick={(e) => {
                       e.stopPropagation()
                       onInstall(ms)
@@ -139,6 +136,9 @@ export function SkillsLeaderboard({ onInstall, onRead }: SkillsLeaderboardProps)
                   >
                     Install
                   </Button>
+                  <span className="text-xs tabular-nums text-muted-foreground w-12 text-right">
+                    {formatInstalls(skill.installs)}
+                  </span>
                 </div>
               </button>
             )
