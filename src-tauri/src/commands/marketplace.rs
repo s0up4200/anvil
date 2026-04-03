@@ -1,3 +1,4 @@
+use base64::{engine::general_purpose::STANDARD, Engine as _};
 use tauri::AppHandle;
 
 use crate::error::AppError;
@@ -111,11 +112,12 @@ pub async fn fetch_marketplace_skill_content(package: String) -> Result<String, 
         .ok_or_else(|| AppError::CliError("Missing tree SHA in response".into()))?
         .to_string();
 
-    let suffix = format!("{skill}/SKILL.md");
     let entries = tree_resp["tree"]
         .as_array()
         .ok_or_else(|| AppError::CliError("Missing tree array in response".into()))?;
 
+    // Fast path: directory name matches skill name
+    let suffix = format!("{skill}/SKILL.md");
     let skill_path = entries
         .iter()
         .find_map(|e| {
@@ -125,10 +127,54 @@ pub async fn fetch_marketplace_skill_content(package: String) -> Result<String, 
             } else {
                 None
             }
-        })
-        .ok_or_else(|| {
-            AppError::NotFound(format!("SKILL.md not found for '{skill}' in {owner_repo}"))
-        })?;
+        });
+
+    // Fallback: skill name differs from directory name (e.g. frontmatter name has org prefix).
+    // Fetch SKILL.md blobs one at a time and match by frontmatter `name` field.
+    let skill_path = match skill_path {
+        Some(p) => p,
+        None => {
+            let candidates = entries.iter().filter_map(|e| {
+                let path = e["path"].as_str()?;
+                let blob_sha = e["sha"].as_str()?;
+                if path.ends_with("/SKILL.md") {
+                    Some((path, blob_sha))
+                } else {
+                    None
+                }
+            });
+
+            let mut matched = None;
+            for (path, blob_sha) in candidates {
+                let url = format!(
+                    "https://api.github.com/repos/{owner_repo}/git/blobs/{blob_sha}"
+                );
+                let ok = client
+                    .get(&url)
+                    .header("User-Agent", "anvil")
+                    .send()
+                    .await
+                    .ok();
+                let body = match ok {
+                    Some(r) => r.text().await.ok(),
+                    None => None,
+                };
+
+                if let Some(name) = body.as_deref().and_then(extract_frontmatter_name_from_blob) {
+                    if name == skill {
+                        matched = Some(path.to_string());
+                        break;
+                    }
+                }
+            }
+
+            matched.ok_or_else(|| {
+                AppError::NotFound(format!(
+                    "SKILL.md not found for '{skill}' in {owner_repo}"
+                ))
+            })?
+        }
+    };
 
     // Fetch raw content using the tree SHA as ref
     let raw_url = format!(
@@ -455,4 +501,31 @@ pub async fn fetch_skill_metadata(source: String, skill: String) -> Result<Skill
         audits,
         installed_on,
     })
+}
+
+/// Extract the `name` field from YAML frontmatter in a GitHub blob API response.
+/// The blob content is base64-encoded JSON: `{"content": "<base64>", ...}`.
+fn extract_frontmatter_name_from_blob(blob_json: &str) -> Option<String> {
+    let parsed: serde_json::Value = serde_json::from_str(blob_json).ok()?;
+    let encoded = parsed["content"].as_str()?;
+    // GitHub returns base64 with newlines — strip them before decoding
+    let clean: String = encoded.chars().filter(|c| !c.is_whitespace()).collect();
+    let bytes = STANDARD.decode(&clean).ok()?;
+    let text = String::from_utf8(bytes).ok()?;
+
+    // Parse frontmatter: text between first two "---" lines
+    let trimmed = text.strip_prefix("---")?;
+    let end = trimmed.find("\n---")?;
+    let frontmatter = &trimmed[..end];
+
+    for line in frontmatter.lines() {
+        let line = line.trim();
+        if let Some(val) = line.strip_prefix("name:") {
+            let val = val.trim().trim_matches('"').trim_matches('\'');
+            if !val.is_empty() {
+                return Some(val.to_string());
+            }
+        }
+    }
+    None
 }
