@@ -1,11 +1,9 @@
 import { useEffect, useState } from "react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
-import { useLeaderboardStore } from "@/stores/leaderboardStore"
+import { useLeaderboardStore, type Tab } from "@/stores/leaderboardStore"
 import type { LeaderboardSkill, MarketplaceSkill } from "@/types"
 import { cn } from "@/lib/utils"
-
-type Tab = "all" | "trending" | "hot"
 
 function formatInstalls(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`

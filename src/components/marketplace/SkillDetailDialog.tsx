@@ -14,6 +14,16 @@ import { fetchMarketplaceSkillContent, fetchSkillMetadata } from "@/lib/tauri"
 import { getErrorMessage } from "@/lib/utils"
 import type { MarketplaceSkill, SkillMetadata } from "@/types"
 
+const labelClass =
+  "text-[10px] font-medium uppercase tracking-wider text-muted-foreground"
+
+function auditBadgeClass(status: string): string {
+  const base = "text-[10px] px-1.5 py-0"
+  if (status === "PASS") return `text-green-500 border-green-500/30 ${base}`
+  if (status === "WARN") return `text-yellow-500 border-yellow-500/30 ${base}`
+  return `text-red-500 border-red-500/30 ${base}`
+}
+
 interface SkillDetailDialogProps {
   skill: MarketplaceSkill | null
   open: boolean
@@ -66,6 +76,8 @@ export function SkillDetailDialog({
     }
   }, [open, skill])
 
+  const repoUrl = skill ? `https://github.com/${skill.source}` : ""
+
   function handleInstall() {
     if (!skill) return
     onOpenChange(false)
@@ -79,7 +91,7 @@ export function SkillDetailDialog({
           <DialogTitle>{skill?.name ?? "Skill"}</DialogTitle>
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <a
-              href={`https://github.com/${skill?.source}`}
+              href={repoUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="hover:underline"
@@ -107,7 +119,7 @@ export function SkillDetailDialog({
                 {/* Summary */}
                 {metadata?.summaryHtml && (
                   <div className="rounded-md border border-border bg-muted/30 p-3">
-                    <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-2">Summary</p>
+                    <p className={`${labelClass} mb-2`}>Summary</p>
                     <div
                       className="prose dark:prose-invert prose-sm max-w-none prose-p:my-1 prose-ul:my-1 prose-li:my-0"
                       dangerouslySetInnerHTML={{ __html: metadata.summaryHtml }}
@@ -130,15 +142,15 @@ export function SkillDetailDialog({
             <div className="hidden sm:flex w-44 shrink-0 flex-col gap-4 overflow-auto text-sm">
               {metadata.weeklyInstalls && (
                 <div>
-                  <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1">Weekly Installs</p>
+                  <p className={`${labelClass} mb-1`}>Weekly Installs</p>
                   <p className="text-lg font-semibold tabular-nums">{metadata.weeklyInstalls}</p>
                 </div>
               )}
 
               <div>
-                <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1">Repository</p>
+                <p className={`${labelClass} mb-1`}>Repository</p>
                 <a
-                  href={`https://github.com/${skill?.source}`}
+                  href={repoUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-xs text-foreground hover:underline"
@@ -149,34 +161,28 @@ export function SkillDetailDialog({
 
               {metadata.githubStars && (
                 <div>
-                  <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1">GitHub Stars</p>
+                  <p className={`${labelClass} mb-1`}>GitHub Stars</p>
                   <p className="text-xs tabular-nums">{metadata.githubStars}</p>
                 </div>
               )}
 
               {metadata.firstSeen && (
                 <div>
-                  <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1">First Seen</p>
+                  <p className={`${labelClass} mb-1`}>First Seen</p>
                   <p className="text-xs">{metadata.firstSeen}</p>
                 </div>
               )}
 
               {metadata.audits.length > 0 && (
                 <div>
-                  <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1.5">Security Audits</p>
+                  <p className={`${labelClass} mb-1.5`}>Security Audits</p>
                   <div className="flex flex-col gap-1">
                     {metadata.audits.map((audit) => (
                       <div key={audit.name} className="flex items-center justify-between gap-2">
                         <span className="text-xs text-muted-foreground truncate">{audit.name}</span>
                         <Badge
                           variant="outline"
-                          className={
-                            audit.status === "PASS"
-                              ? "text-green-500 border-green-500/30 text-[10px] px-1.5 py-0"
-                              : audit.status === "WARN"
-                                ? "text-yellow-500 border-yellow-500/30 text-[10px] px-1.5 py-0"
-                                : "text-red-500 border-red-500/30 text-[10px] px-1.5 py-0"
-                          }
+                          className={auditBadgeClass(audit.status)}
                         >
                           {audit.status}
                         </Badge>
@@ -188,7 +194,7 @@ export function SkillDetailDialog({
 
               {metadata.installedOn.length > 0 && (
                 <div>
-                  <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1.5">Installed On</p>
+                  <p className={`${labelClass} mb-1.5`}>Installed On</p>
                   <div className="flex flex-col divide-y divide-border">
                     {metadata.installedOn.map((entry) => (
                       <div key={entry.agent} className="flex items-center justify-between py-1">

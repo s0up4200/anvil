@@ -35,28 +35,15 @@ pub async fn check_skill_updates() -> Result<Vec<SkillUpdate>, AppError> {
 
         for line in check_output.lines() {
             let trimmed = line.trim();
-            if trimmed.starts_with('↑') || trimmed.starts_with("↑") {
-                let name = trimmed
-                    .trim_start_matches('↑')
-                    .trim_start_matches("↑")
-                    .trim();
+            if trimmed.starts_with('↑') {
+                let name = trimmed.trim_start_matches('↑').trim();
                 if !name.is_empty() {
-                    let (source_repo, local_hash, installed_at) =
-                        if let Some(entry) = lock.skills.get(name) {
-                            (
-                                entry.source.clone(),
-                                entry.skill_folder_hash.clone(),
-                                entry.installed_at.clone(),
-                            )
-                        } else {
-                            (String::new(), String::new(), String::new())
-                        };
-
+                    let entry = lock.skills.get(name);
                     updates.push(SkillUpdate {
                         skill_name: name.to_string(),
-                        local_hash,
-                        source_repo,
-                        installed_at,
+                        local_hash: entry.map_or(String::new(), |e| e.skill_folder_hash.clone()),
+                        source_repo: entry.map_or(String::new(), |e| e.source.clone()),
+                        installed_at: entry.map_or(String::new(), |e| e.installed_at.clone()),
                     });
                 }
             }
@@ -168,11 +155,6 @@ pub async fn diff_remote_skill(skill_name: String) -> Result<SkillDiff, AppError
         AppError::NotFound(format!("Skill '{skill_name}' not found in lockfile"))
     })?;
 
-    // Build raw GitHub URL from source_url + skill_path
-    let source_url = entry
-        .source_url
-        .trim_end_matches(".git")
-        .to_string();
     let raw_url = format!(
         "https://raw.githubusercontent.com/{}/main/{}",
         entry.source, entry.skill_path
@@ -205,9 +187,6 @@ pub async fn diff_remote_skill(skill_name: String) -> Result<SkillDiff, AppError
         .text()
         .await
         .map_err(|e| AppError::CliError(format!("Failed to read remote skill: {e}")))?;
-
-    // Drop source_url to avoid unused variable warning
-    let _ = source_url;
 
     Ok(SkillDiff {
         skill_name,

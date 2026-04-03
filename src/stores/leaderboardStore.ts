@@ -2,7 +2,7 @@ import { create } from "zustand"
 import { fetchLeaderboard } from "@/lib/tauri"
 import type { LeaderboardSkill } from "@/types"
 
-type Tab = "all" | "trending" | "hot"
+export type Tab = "all" | "trending" | "hot"
 
 const STALE_MS = 5 * 60 * 1000 // 5 minutes
 
