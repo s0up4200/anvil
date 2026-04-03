@@ -56,7 +56,7 @@ export function SkillsLeaderboard({ onInstall, onRead }: SkillsLeaderboardProps)
         <div className="flex items-center gap-1 px-4 pt-3 pb-2">
           {tabs.map((t) => (
             <Tooltip key={t.id}>
-              <TooltipTrigger asChild>
+              <TooltipTrigger>
                 <button
                   type="button"
                   role="tab"

@@ -59,8 +59,8 @@ export function Sidebar() {
     return (
       <ContextMenu key={agent.id}>
         <Tooltip>
-          <TooltipTrigger asChild>
-            <ContextMenuTrigger asChild>
+          <TooltipTrigger>
+            <ContextMenuTrigger>
               <button
                 type="button"
                 onClick={() => { setSelectedAgentId(agent.id); setActiveView("skills") }}
