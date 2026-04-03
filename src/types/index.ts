@@ -64,6 +64,8 @@ export interface Skill {
   lastModified: string;
   fileSize: number;
   lineCount: number;
+  /** Group name from parent folder for nested skills (e.g. "superpowers"). */
+  group?: string;
 }
 
 // ---------------------------------------------------------------------------

@@ -107,6 +107,12 @@ pub struct Skill {
 
     /// Number of lines in the file.
     pub line_count: usize,
+
+    /// Optional group name derived from the parent folder when the skill is
+    /// nested two levels deep (e.g. `superpowers/brainstorming/SKILL.md` → group
+    /// is `"superpowers"`). `None` for top-level skills.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub group: Option<String>,
 }
 
 #[cfg(test)]

@@ -1,14 +1,6 @@
-import { useCallback, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { Search, X } from "lucide-react"
 import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuSeparator,
-  ContextMenuTrigger,
-} from "@/components/ui/context-menu"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,16 +12,15 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { InstallDialog } from "@/components/skills/InstallDialog"
+import { SkillRow } from "@/components/layout/SkillRow"
+import { SkillGroup } from "@/components/layout/SkillGroup"
+import { groupSkills } from "@/lib/skill-grouping"
 import { useSkillStore } from "@/stores/skillStore"
 import { useUpdateStore } from "@/stores/updateStore"
 import { useSkills } from "@/hooks/useSkills"
 import { deleteSkill, duplicateSkill, getConfig, toggleSkill } from "@/lib/tauri"
-import { getAgentColor, getAgentDisplayName } from "@/lib/constants"
 import {
-  Tooltip,
-  TooltipContent,
   TooltipProvider,
-  TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 import type { Skill } from "@/types"
@@ -44,6 +35,15 @@ export function SkillList() {
   const [installTarget, setInstallTarget] = useState<Skill | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<Skill | null>(null)
+
+  // Group skills when not searching
+  const grouped = useMemo(
+    () => (searchQuery.trim() ? null : groupSkills(skills)),
+    [skills, searchQuery],
+  )
+
+  const groupCount = grouped?.filter((e) => e.type === "group").length ?? 0
+  const defaultCollapsed = groupCount > 4
 
   function handleOpenInstall(skill: Skill) {
     setInstallTarget(skill)
@@ -72,7 +72,6 @@ export function SkillList() {
   async function handleDuplicate(skill: Skill) {
     try {
       await duplicateSkill(skill.path)
-      // The file watcher or a refetch will pick up the new skill.
     } catch (err) {
       console.error("Failed to duplicate skill:", err)
     }
@@ -81,7 +80,6 @@ export function SkillList() {
   async function handleToggle(skill: Skill) {
     try {
       const newPath = await toggleSkill(skill.path, !skill.isEnabled)
-      // Optimistically update the skill in the store.
       updateSkillInPlace({
         ...skill,
         path: newPath,
@@ -141,91 +139,53 @@ export function SkillList() {
         )}
 
         <TooltipProvider delay={200}>
-        {!isLoading &&
-          skills.map((skill) => (
-            <ContextMenu key={skill.id}>
-              <ContextMenuTrigger>
-                <button
-                  type="button"
-                  onClick={() => setSelectedSkillId(skill.id)}
-                  className={cn(
-                    "flex w-full flex-col gap-0.5 px-3 py-2 text-left transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset focus-visible:outline-none",
-                    selectedSkillId === skill.id
-                      ? "bg-accent text-accent-foreground"
-                      : "hover:bg-muted",
-                    !skill.isEnabled && "opacity-50"
-                  )}
-                >
-                  {/* Name + update/agent dots */}
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="flex items-center gap-1.5 truncate text-sm font-medium" title={skill.name}>
-                      {skill.name}
-                      {pendingUpdates.some((u) => u.skillName === skill.name) && (
-                        <>
-                          <span
-                            className="size-1.5 shrink-0 rounded-full bg-status-info"
-                            title="Update available"
-                          />
-                          <span className="sr-only">Update available</span>
-                        </>
-                      )}
-                    </span>
-                    <div className="flex shrink-0 items-center gap-0.5">
-                      {skill.agentIds.map((agentId) => (
-                        <Tooltip key={agentId}>
-                          <TooltipTrigger>
-                            <span
-                              className="size-1.5 rounded-full block"
-                              style={{ backgroundColor: getAgentColor(agentId) }}
-                            />
-                          </TooltipTrigger>
-                          <TooltipContent>{getAgentDisplayName(agentId)}</TooltipContent>
-                        </Tooltip>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Description */}
-                  {skill.frontmatter?.description && (
-                    <p className="truncate text-xs text-muted-foreground">
-                      {skill.frontmatter.description}
-                    </p>
-                  )}
-
-                  {/* Enabled badge */}
-                  {!skill.isEnabled && (
-                    <Badge variant="outline" className="w-fit text-[10px]">
-                      disabled
-                    </Badge>
-                  )}
-                </button>
-              </ContextMenuTrigger>
-
-              <ContextMenuContent>
-                <ContextMenuItem
-                  onClick={() => setSelectedSkillId(skill.id)}
-                >
-                  Edit
-                </ContextMenuItem>
-                <ContextMenuItem onClick={() => void handleDuplicate(skill)}>
-                  Duplicate
-                </ContextMenuItem>
-                <ContextMenuItem onClick={() => void handleToggle(skill)}>
-                  {skill.isEnabled ? "Disable" : "Enable"}
-                </ContextMenuItem>
-                <ContextMenuItem onClick={() => handleOpenInstall(skill)}>
-                  Install to…
-                </ContextMenuItem>
-                <ContextMenuSeparator />
-                <ContextMenuItem
-                  variant="destructive"
-                  onClick={() => void handleDelete(skill)}
-                >
-                  Delete
-                </ContextMenuItem>
-              </ContextMenuContent>
-            </ContextMenu>
-          ))}
+          {!isLoading && grouped
+            ? /* Grouped view */
+              grouped.map((entry) =>
+                entry.type === "group" ? (
+                  <SkillGroup
+                    key={entry.groupName}
+                    groupName={entry.groupName}
+                    displayName={entry.displayName}
+                    skills={entry.skills}
+                    selectedSkillId={selectedSkillId}
+                    pendingUpdates={pendingUpdates}
+                    defaultCollapsed={defaultCollapsed}
+                    onSelect={setSelectedSkillId}
+                    onDelete={handleDelete}
+                    onDuplicate={handleDuplicate}
+                    onToggle={handleToggle}
+                    onInstall={handleOpenInstall}
+                  />
+                ) : (
+                  <SkillRow
+                    key={entry.skill.id}
+                    skill={entry.skill}
+                    isSelected={selectedSkillId === entry.skill.id}
+                    pendingUpdates={pendingUpdates}
+                    onSelect={setSelectedSkillId}
+                    onDelete={handleDelete}
+                    onDuplicate={handleDuplicate}
+                    onToggle={handleToggle}
+                    onInstall={handleOpenInstall}
+                  />
+                ),
+              )
+            : /* Flat search results */
+              !isLoading &&
+              skills.map((skill) => (
+                <SkillRow
+                  key={skill.id}
+                  skill={skill}
+                  isSelected={selectedSkillId === skill.id}
+                  pendingUpdates={pendingUpdates}
+                  onSelect={setSelectedSkillId}
+                  onDelete={handleDelete}
+                  onDuplicate={handleDuplicate}
+                  onToggle={handleToggle}
+                  onInstall={handleOpenInstall}
+                />
+              ))}
         </TooltipProvider>
       </div>
 

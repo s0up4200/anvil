@@ -354,6 +354,21 @@ textarea:focus-visible {
 }
 
 /* ============================================================
+   COLLAPSIBLE GROUP — Smooth grid-row animation
+   ============================================================ */
+.skill-group-content {
+    display: grid;
+    grid-template-rows: 1fr;
+    transition: grid-template-rows 200ms ease;
+}
+.skill-group-content[data-collapsed="true"] {
+    grid-template-rows: 0fr;
+}
+.skill-group-content > div {
+    overflow: hidden;
+}
+
+/* ============================================================
    REDUCED MOTION — Respect user preferences
    ============================================================ */
 @media (prefers-reduced-motion: reduce) {
@@ -373,5 +388,8 @@ textarea:focus-visible {
     input:focus-visible,
     textarea:focus-visible {
         box-shadow: none;
+    }
+    .skill-group-content {
+        transition: none;
     }
 }

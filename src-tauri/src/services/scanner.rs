@@ -43,7 +43,7 @@ pub fn scan_directory(
     for (filename, enabled) in SKILL_FILES {
         let candidate = dir.join(filename);
         if candidate.is_file() {
-            if let Some(skill) = build_skill(&candidate, dir, agent_id, scope.clone(), enabled) {
+            if let Some(skill) = build_skill(&candidate, dir, agent_id, scope.clone(), enabled, None) {
                 skills.push(skill);
             }
         }
@@ -57,13 +57,58 @@ pub fn scan_directory(
             continue;
         }
 
+        // Skip hidden directories (e.g. `.system` in Codex).
+        let is_hidden = entry_path
+            .file_name()
+            .and_then(|n| n.to_str())
+            .is_some_and(|n| n.starts_with('.'));
+        if is_hidden {
+            continue;
+        }
+
+        let mut found_skill_at_this_level = false;
         for (filename, enabled) in SKILL_FILES {
             let candidate = entry_path.join(filename);
             if candidate.is_file() {
+                found_skill_at_this_level = true;
                 if let Some(skill) =
-                    build_skill(&candidate, &entry_path, agent_id, scope.clone(), enabled)
+                    build_skill(&candidate, &entry_path, agent_id, scope.clone(), enabled, None)
                 {
                     skills.push(skill);
+                }
+            }
+        }
+
+        // If this subdirectory has no SKILL.md of its own, check one level
+        // deeper — this handles plugin-style layouts where a parent folder
+        // (e.g. `superpowers/`) groups multiple sub-skill directories.
+        if !found_skill_at_this_level {
+            let group_name = entry_path
+                .file_name()
+                .and_then(|n| n.to_str())
+                .map(|s| s.to_string());
+
+            if let Ok(sub_read) = fs::read_dir(&entry_path) {
+                for sub_entry in sub_read.flatten() {
+                    let sub_path = sub_entry.path();
+                    if !sub_path.is_dir() {
+                        continue;
+                    }
+                    for (filename, enabled) in SKILL_FILES {
+                        let candidate = sub_path.join(filename);
+                        if candidate.is_file() {
+                            if let Some(skill) = build_skill(
+                                &candidate,
+                                &sub_path,
+                                agent_id,
+                                scope.clone(),
+                                enabled,
+                                group_name.clone(),
+                            ) {
+                                skills.push(skill);
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -118,6 +163,7 @@ fn build_skill(
     agent_id: &str,
     scope: SkillScope,
     is_enabled: bool,
+    group: Option<String>,
 ) -> Option<Skill> {
     let raw = fs::read_to_string(file_path).ok()?;
     let meta = fs::metadata(file_path).ok()?;
@@ -179,6 +225,7 @@ fn build_skill(
         last_modified,
         file_size,
         line_count,
+        group,
     })
 }
 
@@ -351,5 +398,53 @@ mod tests {
             skill.agent_ids.contains(&"agent-b".to_string()),
             "agent-b should be in agent_ids"
         );
+    }
+
+    // Nested skills: parent dir without SKILL.md acts as a group
+    #[test]
+    fn scan_finds_nested_skills_with_group() {
+        let tmp = TempDir::new().unwrap();
+        let root = tmp.path();
+
+        // Top-level skill (no group)
+        let flat = make_subdir(root, "standalone");
+        write_skill(&flat, "SKILL.md");
+
+        // Nested layout: group-folder/sub-skill/SKILL.md
+        let group_dir = make_subdir(root, "my-plugin");
+        let nested_a = make_subdir(&group_dir, "feature-a");
+        let nested_b = make_subdir(&group_dir, "feature-b");
+        write_skill(&nested_a, "SKILL.md");
+        write_skill(&nested_b, "SKILL.md");
+
+        let skills = scan_directory(root, "test-agent", SkillScope::Global).unwrap();
+        assert_eq!(skills.len(), 3);
+
+        let standalone_skill = skills.iter().find(|s| s.name == "standalone").unwrap();
+        assert!(standalone_skill.group.is_none());
+
+        let feature_a = skills.iter().find(|s| s.name == "feature-a").unwrap();
+        assert_eq!(feature_a.group.as_deref(), Some("my-plugin"));
+
+        let feature_b = skills.iter().find(|s| s.name == "feature-b").unwrap();
+        assert_eq!(feature_b.group.as_deref(), Some("my-plugin"));
+    }
+
+    // Group dir that also has its own SKILL.md should NOT recurse
+    #[test]
+    fn scan_does_not_recurse_when_parent_has_skill() {
+        let tmp = TempDir::new().unwrap();
+        let root = tmp.path();
+
+        // Parent has its own SKILL.md → treat as a regular skill, don't recurse
+        let parent = make_subdir(root, "has-own-skill");
+        write_skill(&parent, "SKILL.md");
+        let nested = make_subdir(&parent, "nested");
+        write_skill(&nested, "SKILL.md");
+
+        let skills = scan_directory(root, "test-agent", SkillScope::Global).unwrap();
+        // Should find only the parent's SKILL.md, not the nested one
+        assert_eq!(skills.len(), 1);
+        assert_eq!(skills[0].name, "has-own-skill");
     }
 }
