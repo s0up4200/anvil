@@ -22,14 +22,14 @@ Cross-platform desktop app for managing AI agent skills. Tauri v2 + React 19.
 ```
 src-tauri/src/
   commands/    # Tauri IPC handlers (agents, skills, settings, watcher, marketplace)
-  services/    # Pure logic: parser, scanner, symlink, skills_cli, lockfile, updater
+  services/    # Pure logic: fs, parser, scanner, symlink, skills_cli, lockfile, updater
   models/      # Data structs: agent, skill, config, marketplace
   error.rs     # AppError enum (Io, YamlParse, NotFound, etc.)
   lib.rs       # App builder, command registration, state setup
 src/
   components/  # layout/, editor/, skills/, settings/, marketplace/, ui/ (shadcn)
   hooks/       # useSkills, useAgents, useKeyboard, useFileWatcher, useMarketplace, useUpdateChecker
-  stores/      # Zustand: uiStore, skillStore, agentStore, marketplaceStore, updateStore
+  stores/      # Zustand: uiStore, skillStore, agentStore, marketplaceStore, leaderboardStore, updateStore
   lib/tauri.ts # Type-safe IPC invoke wrappers
   types/       # TypeScript interfaces
 ```
