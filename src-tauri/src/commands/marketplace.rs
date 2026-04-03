@@ -92,6 +92,76 @@ pub fn read_skill_lockfile() -> Result<Vec<(String, LockfileEntry)>, AppError> {
 }
 
 #[tauri::command]
+pub async fn fetch_marketplace_skill_content(package: String) -> Result<String, AppError> {
+    let (owner_repo, skill) = package
+        .rsplit_once('@')
+        .ok_or_else(|| AppError::CliError("Invalid package format, expected owner/repo@skill".into()))?;
+
+    let owner_repo = owner_repo.to_string();
+    let skill = skill.to_string();
+
+    // Fetch the repo tree to find the SKILL.md path
+    let tree_url = format!(
+        "https://api.github.com/repos/{owner_repo}/git/trees/HEAD?recursive=1"
+    );
+
+    let client = reqwest::Client::new();
+    let tree_text = client
+        .get(&tree_url)
+        .header("User-Agent", "anvil")
+        .send()
+        .await
+        .map_err(|e| AppError::CliError(format!("Failed to fetch repo tree: {e}")))?
+        .text()
+        .await
+        .map_err(|e| AppError::CliError(format!("Failed to read tree response: {e}")))?;
+
+    let tree_resp: serde_json::Value = serde_json::from_str(&tree_text)
+        .map_err(|e| AppError::CliError(format!("Failed to parse tree JSON: {e}")))?;
+
+    let sha = tree_resp["sha"]
+        .as_str()
+        .ok_or_else(|| AppError::CliError("Missing tree SHA in response".into()))?
+        .to_string();
+
+    let suffix = format!("{skill}/SKILL.md");
+    let entries = tree_resp["tree"]
+        .as_array()
+        .ok_or_else(|| AppError::CliError("Missing tree array in response".into()))?;
+
+    let skill_path = entries
+        .iter()
+        .find_map(|e| {
+            let path = e["path"].as_str()?;
+            if path.ends_with(&suffix) {
+                Some(path.to_string())
+            } else {
+                None
+            }
+        })
+        .ok_or_else(|| {
+            AppError::NotFound(format!("SKILL.md not found for '{skill}' in {owner_repo}"))
+        })?;
+
+    // Fetch raw content using the tree SHA as ref
+    let raw_url = format!(
+        "https://raw.githubusercontent.com/{owner_repo}/{sha}/{skill_path}"
+    );
+
+    let content = client
+        .get(&raw_url)
+        .header("User-Agent", "anvil")
+        .send()
+        .await
+        .map_err(|e| AppError::CliError(format!("Failed to fetch skill content: {e}")))?
+        .text()
+        .await
+        .map_err(|e| AppError::CliError(format!("Failed to read skill content: {e}")))?;
+
+    Ok(content)
+}
+
+#[tauri::command]
 pub async fn diff_remote_skill(skill_name: String) -> Result<SkillDiff, AppError> {
     let lock = lockfile::read_lockfile()?;
     let entry = lock.skills.get(&skill_name).ok_or_else(|| {

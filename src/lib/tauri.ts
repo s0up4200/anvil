@@ -151,6 +151,11 @@ export function readSkillLockfile(): Promise<[string, LockfileEntry][]> {
   return invoke<[string, LockfileEntry][]>("read_skill_lockfile");
 }
 
+/** Fetch the full SKILL.md content for a marketplace skill from GitHub. */
+export function fetchMarketplaceSkillContent(pkg: string): Promise<string> {
+  return invoke<string>("fetch_marketplace_skill_content", { package: pkg });
+}
+
 /** Fetch the diff between local and remote versions of a skill. */
 export function diffRemoteSkill(skillName: string): Promise<SkillDiff> {
   return invoke<SkillDiff>("diff_remote_skill", { skillName });

@@ -4,11 +4,15 @@ import type { MarketplaceSkill } from "@/types"
 interface SkillCardProps {
   skill: MarketplaceSkill
   onInstall: (skill: MarketplaceSkill) => void
+  onRead: (skill: MarketplaceSkill) => void
 }
 
-export function SkillCard({ skill, onInstall }: SkillCardProps) {
+export function SkillCard({ skill, onInstall, onRead }: SkillCardProps) {
   return (
-    <div className="flex flex-col gap-2 rounded-lg border border-border bg-surface p-4">
+    <div
+      className="flex flex-col gap-2 rounded-lg border border-border bg-surface p-4 cursor-pointer hover:border-foreground/20 transition-colors"
+      onClick={() => onRead(skill)}
+    >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <h3 className="truncate text-sm font-medium text-foreground">
@@ -36,6 +40,7 @@ export function SkillCard({ skill, onInstall }: SkillCardProps) {
             target="_blank"
             rel="noopener noreferrer"
             className="text-xs text-accent hover:underline truncate"
+            onClick={(e) => e.stopPropagation()}
           >
             skills.sh
           </a>
@@ -45,7 +50,10 @@ export function SkillCard({ skill, onInstall }: SkillCardProps) {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => onInstall(skill)}
+          onClick={(e) => {
+            e.stopPropagation()
+            onInstall(skill)
+          }}
         >
           Install
         </Button>

@@ -4,6 +4,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { useMarketplace } from "@/hooks/useMarketplace"
 import { SkillCard } from "./SkillCard"
 import { MarketplaceInstallDialog } from "./MarketplaceInstallDialog"
+import { SkillDetailDialog } from "./SkillDetailDialog"
 import type { MarketplaceSkill } from "@/types"
 
 export function MarketplaceBrowser() {
@@ -15,9 +16,19 @@ export function MarketplaceBrowser() {
   )
   const [installDialogOpen, setInstallDialogOpen] = useState(false)
 
+  const [detailTarget, setDetailTarget] = useState<MarketplaceSkill | null>(
+    null,
+  )
+  const [detailOpen, setDetailOpen] = useState(false)
+
   function handleInstall(skill: MarketplaceSkill) {
     setInstallTarget(skill)
     setInstallDialogOpen(true)
+  }
+
+  function handleRead(skill: MarketplaceSkill) {
+    setDetailTarget(skill)
+    setDetailOpen(true)
   }
 
   return (
@@ -84,12 +95,20 @@ export function MarketplaceBrowser() {
                   key={skill.package}
                   skill={skill}
                   onInstall={handleInstall}
+                  onRead={handleRead}
                 />
               ))}
             </div>
           )}
         </div>
       </ScrollArea>
+
+      <SkillDetailDialog
+        skill={detailTarget}
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+        onInstall={handleInstall}
+      />
 
       <MarketplaceInstallDialog
         open={installDialogOpen}
