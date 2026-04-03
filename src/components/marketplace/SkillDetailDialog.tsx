@@ -90,7 +90,7 @@ export function SkillDetailDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[min(90vw,56rem)] max-h-[80vh] flex flex-col">
+      <DialogContent className="sm:max-w-[min(90vw,72rem)] max-h-[85vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>{skill?.name ?? "Skill"}</DialogTitle>
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
