@@ -48,6 +48,10 @@ pub struct AppConfig {
     /// Whether to show a confirmation dialog before deleting a skill.
     #[serde(default = "default_true")]
     pub confirm_before_delete: bool,
+
+    /// Whether to check for skill updates on startup.
+    #[serde(default)]
+    pub check_for_skill_updates: bool,
 }
 
 fn default_scope() -> String {
@@ -72,6 +76,7 @@ impl Default for AppConfig {
             theme: default_theme(),
             default_scope: default_scope(),
             confirm_before_delete: true,
+            check_for_skill_updates: false,
         }
     }
 }
@@ -99,6 +104,7 @@ mod tests {
         assert_eq!(cfg.theme, "system");
         assert_eq!(cfg.default_scope, "global");
         assert!(cfg.confirm_before_delete);
+        assert!(!cfg.check_for_skill_updates);
     }
 
     #[test]
@@ -115,6 +121,7 @@ mod tests {
             theme: "dark".to_string(),
             default_scope: "project".to_string(),
             confirm_before_delete: false,
+            check_for_skill_updates: true,
         };
 
         let json = serde_json::to_string(&cfg).expect("serialize");
@@ -126,6 +133,7 @@ mod tests {
         assert_eq!(cfg.theme, cfg2.theme);
         assert_eq!(cfg.default_scope, cfg2.default_scope);
         assert_eq!(cfg.confirm_before_delete, cfg2.confirm_before_delete);
+        assert_eq!(cfg.check_for_skill_updates, cfg2.check_for_skill_updates);
         assert_eq!(cfg.custom_agents.len(), cfg2.custom_agents.len());
         assert_eq!(cfg.custom_agents[0].id, cfg2.custom_agents[0].id);
     }

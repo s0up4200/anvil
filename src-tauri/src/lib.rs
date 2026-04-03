@@ -35,10 +35,13 @@ pub fn run() {
             commands::marketplace::fetch_skill_metadata,
         ])
         .setup(|app| {
-            let handle = app.handle().clone();
-            std::thread::spawn(move || {
-                services::updater::run_background_check(handle);
-            });
+            let config = commands::settings::load_config_from_disk();
+            if config.check_for_skill_updates {
+                let handle = app.handle().clone();
+                std::thread::spawn(move || {
+                    services::updater::run_background_check(handle);
+                });
+            }
             Ok(())
         })
         .run(tauri::generate_context!())

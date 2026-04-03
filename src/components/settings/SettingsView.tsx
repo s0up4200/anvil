@@ -29,6 +29,7 @@ const DEFAULT_CONFIG: AppConfig = {
   theme: "system",
   defaultScope: "global",
   confirmBeforeDelete: true,
+  checkForSkillUpdates: false,
 }
 
 export function SettingsView() {
@@ -136,6 +137,19 @@ export function SettingsView() {
                   ))}
                 </div>
               </div>
+
+              {/* Check for skill updates on startup */}
+              <label className="flex items-center justify-between gap-3">
+                <span className="text-xs font-medium text-foreground">Check for skill updates on startup</span>
+                <Switch
+                  checked={config.checkForSkillUpdates}
+                  onCheckedChange={(checked) => {
+                    const next = { ...config, checkForSkillUpdates: checked }
+                    setConfig(next)
+                    void saveConfig(next)
+                  }}
+                />
+              </label>
 
               {/* Confirm before delete */}
               <label className="flex items-center justify-between gap-3">

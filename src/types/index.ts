@@ -86,6 +86,7 @@ export interface AppConfig {
   theme: string;
   defaultScope: string;
   confirmBeforeDelete: boolean;
+  checkForSkillUpdates: boolean;
 }
 
 // ---------------------------------------------------------------------------
