@@ -273,6 +273,103 @@
 }
 
 /* ============================================================
+   PROSE — Markdown rendered content, matched to Forge tokens
+   ============================================================ */
+.prose {
+    --tw-prose-body: var(--foreground);
+    --tw-prose-headings: var(--foreground);
+    --tw-prose-lead: var(--muted-foreground);
+    --tw-prose-links: var(--primary);
+    --tw-prose-bold: var(--foreground);
+    --tw-prose-counters: var(--muted-foreground);
+    --tw-prose-bullets: oklch(0.50 0.06 52);
+    --tw-prose-hr: var(--border);
+    --tw-prose-quotes: var(--foreground);
+    --tw-prose-quote-borders: var(--border);
+    --tw-prose-captions: var(--muted-foreground);
+    --tw-prose-kbd: var(--foreground);
+    --tw-prose-kbd-shadows: oklch(0.60 0.195 52);
+    --tw-prose-code: var(--foreground);
+    --tw-prose-pre-code: var(--foreground);
+    --tw-prose-pre-bg: var(--muted);
+    --tw-prose-th-borders: var(--border);
+    --tw-prose-td-borders: var(--border);
+    --tw-prose-invert-body: var(--foreground);
+    --tw-prose-invert-headings: var(--foreground);
+    --tw-prose-invert-lead: var(--muted-foreground);
+    --tw-prose-invert-links: var(--primary);
+    --tw-prose-invert-bold: var(--foreground);
+    --tw-prose-invert-counters: var(--muted-foreground);
+    --tw-prose-invert-bullets: oklch(0.65 0.08 52);
+    --tw-prose-invert-hr: var(--border);
+    --tw-prose-invert-quotes: var(--foreground);
+    --tw-prose-invert-quote-borders: var(--border);
+    --tw-prose-invert-captions: var(--muted-foreground);
+    --tw-prose-invert-kbd: var(--foreground);
+    --tw-prose-invert-code: var(--foreground);
+    --tw-prose-invert-pre-code: var(--foreground);
+    --tw-prose-invert-pre-bg: var(--muted);
+    --tw-prose-invert-th-borders: var(--border);
+    --tw-prose-invert-td-borders: var(--border);
+}
+
+/* Links — amber with hover underline, matching app buttons */
+.prose :where(a):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 150ms ease;
+}
+.prose :where(a):not(:where([class~="not-prose"],[class~="not-prose"] *)):hover {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+/* Inline code — warm muted chip */
+.prose :where(code):not(:where(pre *, [class~="not-prose"],[class~="not-prose"] *)) {
+    background: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) * 0.6);
+    padding: 0.15em 0.35em;
+    font-size: 0.85em;
+    font-weight: 450;
+}
+.prose :where(code):not(:where(pre *, [class~="not-prose"],[class~="not-prose"] *))::before,
+.prose :where(code):not(:where(pre *, [class~="not-prose"],[class~="not-prose"] *))::after {
+    content: none;
+}
+
+/* Code blocks — warm background with subtle border */
+.prose :where(pre):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+
+/* Blockquotes — left border uses amber tint */
+.prose :where(blockquote):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
+    border-left-color: oklch(0.60 0.195 52 / 40%);
+    font-style: normal;
+    color: var(--muted-foreground);
+}
+.dark .prose :where(blockquote):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
+    border-left-color: oklch(0.76 0.175 52 / 35%);
+}
+
+/* Tables — warm borders, compact feel */
+.prose :where(th):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
+    font-family: var(--font-heading);
+    font-weight: 500;
+    font-size: 0.8em;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+}
+
+/* Horizontal rules */
+.prose :where(hr):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
+    border-color: var(--border);
+}
+
+/* ============================================================
    MICRO-INTERACTIONS — The forge breathes
    ============================================================ */
 
