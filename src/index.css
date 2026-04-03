@@ -2,13 +2,76 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/geist";
+@import "@fontsource-variable/space-grotesk";
 @plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
 
+/* ============================================================
+   THE FORGE — Skillforge Design System
+   Palette: Warm Ember (hue 52°) — forge fire against dark iron
+   Heading: Space Grotesk Variable — geometric, distinctive
+   Body: Geist Variable — clean, technical precision
+   ============================================================ */
+
+/* Shadow tokens — depth shadows (light), amber glows (dark) */
+:root {
+    --shadow-sm-value:
+        0 1px 2px oklch(0.12 0.014 52 / 0.07);
+    --shadow-md-value:
+        0 1px 2px oklch(0.12 0.014 52 / 0.04),
+        0 2px 4px oklch(0.12 0.014 52 / 0.05),
+        0 4px 8px oklch(0.12 0.014 52 / 0.05);
+    --shadow-lg-value:
+        0 2px 4px oklch(0.12 0.014 52 / 0.04),
+        0 4px 8px oklch(0.12 0.014 52 / 0.05),
+        0 8px 16px oklch(0.12 0.014 52 / 0.07),
+        0 16px 32px oklch(0.12 0.014 52 / 0.05);
+    --shadow-elevated-value:
+        0 4px 6px oklch(0.12 0.014 52 / 0.05),
+        0 8px 12px oklch(0.12 0.014 52 / 0.07),
+        0 16px 24px oklch(0.12 0.014 52 / 0.09),
+        0 24px 48px oklch(0.12 0.014 52 / 0.06);
+    --shadow-dreamy-value:
+        0 8px 16px oklch(0.12 0.014 52 / 0.04),
+        0 16px 32px oklch(0.12 0.014 52 / 0.06),
+        0 32px 64px oklch(0.12 0.014 52 / 0.08),
+        0 48px 96px oklch(0.12 0.014 52 / 0.05);
+}
+
+.dark {
+    --shadow-sm-value:
+        0 0 0 1px oklch(0.76 0.175 52 / 0.08);
+    --shadow-md-value:
+        0 0 0 1px oklch(0.76 0.175 52 / 0.10),
+        0 4px 16px oklch(0.76 0.175 52 / 0.06);
+    --shadow-lg-value:
+        0 0 0 1px oklch(0.76 0.175 52 / 0.12),
+        0 8px 24px oklch(0.76 0.175 52 / 0.09),
+        0 16px 40px oklch(0.76 0.175 52 / 0.06);
+    --shadow-elevated-value:
+        0 0 0 1px oklch(0.76 0.175 52 / 0.16),
+        0 12px 32px oklch(0.76 0.175 52 / 0.12),
+        0 24px 56px oklch(0.76 0.175 52 / 0.08);
+    --shadow-dreamy-value:
+        0 0 0 1px oklch(0.76 0.175 52 / 0.20),
+        0 16px 48px oklch(0.76 0.175 52 / 0.15),
+        0 32px 80px oklch(0.76 0.175 52 / 0.10);
+}
+
 @theme inline {
-    --font-heading: var(--font-sans);
+    /* Typography */
+    --font-heading: 'Space Grotesk Variable', 'Space Grotesk', sans-serif;
     --font-sans: 'Geist Variable', sans-serif;
+
+    /* Shadow utilities */
+    --shadow-sm: var(--shadow-sm-value);
+    --shadow-md: var(--shadow-md-value);
+    --shadow-lg: var(--shadow-lg-value);
+    --shadow-elevated: var(--shadow-elevated-value);
+    --shadow-dreamy: var(--shadow-dreamy-value);
+
+    /* Semantic color tokens → CSS variables */
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -54,93 +117,261 @@
     --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* ============================================================
+   LIGHT MODE — Warm workshop daylight
+   All neutrals carry a subtle amber warmth (hue 52–68°)
+   ============================================================ */
 :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
+    --background: oklch(0.985 0.005 75);
+    --foreground: oklch(0.175 0.025 55);
+    --card: oklch(1 0.006 70);
+    --card-foreground: oklch(0.175 0.025 55);
+    --popover: oklch(1 0.006 70);
+    --popover-foreground: oklch(0.175 0.025 55);
+    --primary: oklch(0.60 0.195 52);
+    --primary-foreground: oklch(0.99 0.005 70);
+    --secondary: oklch(0.935 0.014 68);
+    --secondary-foreground: oklch(0.25 0.025 55);
+    --muted: oklch(0.942 0.012 68);
+    --muted-foreground: oklch(0.50 0.025 58);
+    --accent: oklch(0.935 0.014 68);
+    --accent-foreground: oklch(0.25 0.025 55);
     --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --radius: 0.625rem;
+    --border: oklch(0.888 0.018 68);
+    --input: oklch(0.888 0.018 68);
+    --ring: oklch(0.60 0.195 52);
+    --chart-1: oklch(0.70 0.185 52);
+    --chart-2: oklch(0.62 0.155 195);
+    --chart-3: oklch(0.56 0.175 265);
+    --chart-4: oklch(0.65 0.170 140);
+    --chart-5: oklch(0.62 0.195 15);
+    --radius: 0.375rem;
     --status-pass: oklch(0.55 0.15 145);
-    --status-warn: oklch(0.65 0.15 85);
+    --status-warn: oklch(0.60 0.17 52);
     --status-fail: oklch(0.55 0.2 27);
     --status-info: oklch(0.55 0.15 250);
-    --status-pending: oklch(0.65 0.15 65);
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.708 0 0);
+    --status-pending: oklch(0.58 0.14 195);
+    --sidebar: oklch(0.975 0.006 72);
+    --sidebar-foreground: oklch(0.175 0.025 55);
+    --sidebar-primary: oklch(0.60 0.195 52);
+    --sidebar-primary-foreground: oklch(0.99 0.005 70);
+    --sidebar-accent: oklch(0.935 0.014 68);
+    --sidebar-accent-foreground: oklch(0.25 0.025 55);
+    --sidebar-border: oklch(0.888 0.018 68);
+    --sidebar-ring: oklch(0.60 0.195 52);
 }
 
+/* ============================================================
+   DARK MODE — Forge at night
+   Deep warm brown-blacks with amber ember glow
+   ============================================================ */
 .dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.205 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
+    --background: oklch(0.12 0.014 52);
+    --foreground: oklch(0.96 0.008 68);
+    --card: oklch(0.163 0.018 52);
+    --card-foreground: oklch(0.96 0.008 68);
+    --popover: oklch(0.163 0.018 52);
+    --popover-foreground: oklch(0.96 0.008 68);
+    --primary: oklch(0.76 0.175 52);
+    --primary-foreground: oklch(0.12 0.014 52);
+    --secondary: oklch(0.22 0.020 52);
+    --secondary-foreground: oklch(0.96 0.008 68);
+    --muted: oklch(0.215 0.018 52);
+    --muted-foreground: oklch(0.60 0.030 60);
+    --accent: oklch(0.22 0.020 52);
+    --accent-foreground: oklch(0.96 0.008 68);
     --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.556 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --status-pass: oklch(0.7 0.15 145);
-    --status-warn: oklch(0.75 0.15 85);
-    --status-fail: oklch(0.7 0.18 27);
-    --status-info: oklch(0.7 0.15 250);
-    --status-pending: oklch(0.75 0.15 65);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.488 0.243 264.376);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.556 0 0);
+    --border: oklch(0.30 0.022 52 / 55%);
+    --input: oklch(1 0 0 / 10%);
+    --ring: oklch(0.76 0.175 52 / 70%);
+    --chart-1: oklch(0.76 0.185 52);
+    --chart-2: oklch(0.68 0.155 195);
+    --chart-3: oklch(0.64 0.175 265);
+    --chart-4: oklch(0.70 0.170 140);
+    --chart-5: oklch(0.68 0.195 15);
+    --status-pass: oklch(0.70 0.15 145);
+    --status-warn: oklch(0.76 0.175 52);
+    --status-fail: oklch(0.70 0.18 27);
+    --status-info: oklch(0.70 0.15 250);
+    --status-pending: oklch(0.68 0.14 195);
+    --sidebar: oklch(0.163 0.018 52);
+    --sidebar-foreground: oklch(0.96 0.008 68);
+    --sidebar-primary: oklch(0.76 0.175 52);
+    --sidebar-primary-foreground: oklch(0.12 0.014 52);
+    --sidebar-accent: oklch(0.22 0.020 52);
+    --sidebar-accent-foreground: oklch(0.96 0.008 68);
+    --sidebar-border: oklch(0.30 0.022 52 / 45%);
+    --sidebar-ring: oklch(0.76 0.175 52 / 70%);
 }
 
+/* ============================================================
+   BASE LAYER — Global resets & typography
+   ============================================================ */
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
+    * {
+        @apply border-border outline-ring/50;
+        box-sizing: border-box;
     }
-  body {
-    @apply bg-background text-foreground;
+    body {
+        @apply bg-background text-foreground;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     }
-  html {
-    @apply font-sans;
+    html {
+        @apply font-sans;
+    }
+
+    /* Heading font — Space Grotesk for distinctive character */
+    h1, h2, h3, h4, h5, h6 {
+        font-family: var(--font-heading);
+        font-feature-settings: "ss01", "ss02";
+    }
+    h1 { letter-spacing: -0.03em; line-height: 1.1; }
+    h2 { letter-spacing: -0.025em; line-height: 1.2; }
+    h3 { letter-spacing: -0.020em; line-height: 1.25; }
+    h4 { letter-spacing: -0.015em; line-height: 1.3; }
+    h5, h6 { letter-spacing: -0.010em; }
+
+    /* Body text rhythm */
+    p, li {
+        line-height: 1.7;
+    }
+
+    /* Focus states — amber ring */
+    :focus-visible {
+        outline: 2px solid var(--ring);
+        outline-offset: 2px;
+        border-radius: calc(var(--radius) * 0.8);
+        transition: outline-color 150ms ease;
+    }
+
+    /* Selection color */
+    ::selection {
+        background-color: oklch(0.60 0.195 52 / 25%);
+        color: var(--foreground);
+    }
+    .dark ::selection {
+        background-color: oklch(0.76 0.175 52 / 30%);
+    }
+
+    /* Scrollbar styling — subtle warm tint */
+    ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: var(--muted-foreground);
+    }
+}
+
+/* ============================================================
+   MICRO-INTERACTIONS — The forge breathes
+   ============================================================ */
+
+/* Card hover — lift with shadow intensification */
+[data-slot="card"] {
+    transition:
+        transform 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94),
+        box-shadow 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    box-shadow: var(--shadow-sm-value);
+}
+[data-slot="card"]:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-elevated-value);
+}
+
+/* Button press — tactile feedback */
+button:not(:disabled):active,
+[role="button"]:not(:disabled):active {
+    transform: scale(0.97);
+    transition: transform 80ms ease;
+}
+button, [role="button"] {
+    transition: transform 150ms ease, opacity 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
+    cursor: pointer;
+}
+button:disabled {
+    cursor: not-allowed;
+}
+
+/* Input focus — amber border glow */
+input:focus-visible,
+textarea:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 0;
+    box-shadow: 0 0 0 4px oklch(0.60 0.195 52 / 12%);
+}
+.dark input:focus-visible,
+.dark textarea:focus-visible {
+    box-shadow: 0 0 0 4px oklch(0.76 0.175 52 / 18%);
+}
+
+/* Switch transition */
+[data-slot="switch"] {
+    transition: background-color 200ms ease;
+}
+
+/* Badge shimmer on primary variant */
+[data-slot="badge"][data-variant="default"] {
+    background: linear-gradient(
+        135deg,
+        var(--primary) 0%,
+        oklch(0.68 0.210 58) 100%
+    );
+}
+
+/* Separator — warm tint */
+[data-slot="separator"] {
+    background-color: var(--border);
+}
+
+/* ============================================================
+   STATUS INDICATORS — Crisp semantic colors
+   ============================================================ */
+.status-pass { color: var(--status-pass); }
+.status-warn { color: var(--status-warn); }
+.status-fail { color: var(--status-fail); }
+.status-info { color: var(--status-info); }
+.status-pending { color: var(--status-pending); }
+
+/* ============================================================
+   LABEL UTILITY — Premium uppercase treatment
+   ============================================================ */
+.label-caps {
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-family: var(--font-heading);
+}
+
+/* ============================================================
+   REDUCED MOTION — Respect user preferences
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+    [data-slot="card"] {
+        transition: none;
+    }
+    [data-slot="card"]:hover {
+        transform: none;
+    }
+    button:not(:disabled):active,
+    [role="button"]:not(:disabled):active {
+        transform: none;
+    }
+    button, [role="button"] {
+        transition: opacity 150ms ease, background-color 150ms ease;
+    }
+    input:focus-visible,
+    textarea:focus-visible {
+        box-shadow: none;
     }
 }

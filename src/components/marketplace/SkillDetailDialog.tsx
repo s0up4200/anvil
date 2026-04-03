@@ -18,13 +18,13 @@ const labelClass =
   "text-[10px] font-medium uppercase tracking-wider text-muted-foreground"
 
 const AUDIT_STATUS_COLORS: Record<string, string> = {
-  PASS: "text-status-pass border-status-pass/30",
-  WARN: "text-status-warn border-status-warn/30",
+  PASS: "text-status-pass border-status-pass/10 bg-status-pass/10",
+  WARN: "text-status-warn border-status-warn/10 bg-status-warn/10",
 }
 
 function auditBadgeClass(status: string): string {
-  const color = AUDIT_STATUS_COLORS[status] ?? "text-status-fail border-status-fail/30"
-  return `${color} text-[10px] px-1.5 py-0`
+  const color = AUDIT_STATUS_COLORS[status] ?? "text-status-fail border-status-fail/10 bg-status-fail/10"
+  return `${color} text-[10px] w-14 justify-center px-1.5 py-0`
 }
 
 interface SkillDetailDialogProps {
