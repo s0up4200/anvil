@@ -41,10 +41,20 @@ export default function App() {
     return () => window.removeEventListener("contextmenu", block)
   }, [])
 
-  // Apply theme class to <html>
+  // Apply theme class to <html> and listen for OS changes when "system"
   useEffect(() => {
-    const isDark = resolveTheme(theme) === "dark"
-    document.documentElement.classList.toggle("dark", isDark)
+    const apply = () => {
+      const isDark = resolveTheme(theme) === "dark"
+      document.documentElement.classList.toggle("dark", isDark)
+    }
+
+    apply()
+
+    if (theme === "system") {
+      const mq = window.matchMedia("(prefers-color-scheme: dark)")
+      mq.addEventListener("change", apply)
+      return () => mq.removeEventListener("change", apply)
+    }
   }, [theme])
 
   return (
