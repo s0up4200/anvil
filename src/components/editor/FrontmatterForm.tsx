@@ -4,8 +4,6 @@ import { Toggle } from "@/components/ui/toggle"
 import { cn } from "@/lib/utils"
 import type { SkillFrontmatter } from "@/types"
 
-const DESCRIPTION_MAX = 200
-
 // Simple slug validator: lowercase letters, digits, hyphens only.
 const SLUG_RE = /^[a-z0-9-]*$/
 
@@ -63,15 +61,8 @@ export function FrontmatterForm({
           <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
             Description
           </label>
-          <span
-            className={cn(
-              "text-xs tabular-nums",
-              description.length > DESCRIPTION_MAX
-                ? "text-destructive"
-                : "text-muted-foreground"
-            )}
-          >
-            {description.length}/{DESCRIPTION_MAX}
+          <span className="text-xs tabular-nums text-muted-foreground">
+            {description.length}
           </span>
         </div>
         <Textarea
@@ -79,7 +70,6 @@ export function FrontmatterForm({
           onChange={(e) => update({ description: e.target.value })}
           placeholder="What does this skill do?"
           rows={3}
-          aria-invalid={description.length > DESCRIPTION_MAX}
         />
       </div>
 
