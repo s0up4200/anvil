@@ -34,6 +34,10 @@ src/
   types/       # TypeScript interfaces
 ```
 
+## Design
+
+See [.impeccable.md](.impeccable.md) for design context, brand personality, and design principles.
+
 ## Conventions
 
 - Rust commands in src-tauri/src/commands/, one file per domain

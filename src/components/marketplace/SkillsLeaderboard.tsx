@@ -4,6 +4,12 @@ import { Button } from "@/components/ui/button"
 import { useLeaderboardStore, type Tab } from "@/stores/leaderboardStore"
 import type { LeaderboardSkill, MarketplaceSkill } from "@/types"
 import { cn } from "@/lib/utils"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 function formatInstalls(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`
@@ -37,32 +43,35 @@ export function SkillsLeaderboard({ onInstall, onRead }: SkillsLeaderboardProps)
   const isLoading = loading[tab]
   const tabError = error[tab]
 
-  const tabs: { id: Tab; label: string }[] = [
-    { id: "all", label: "All Time" },
-    { id: "trending", label: "Trending" },
-    { id: "hot", label: "Hot" },
+  const tabs: { id: Tab; label: string; tooltip: string }[] = [
+    { id: "all", label: "All Time", tooltip: "Most installed skills overall" },
+    { id: "trending", label: "Trending", tooltip: "Fastest growing this week" },
+    { id: "hot", label: "Hot", tooltip: "Most installed this week" },
   ]
 
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
       {/* Tabs */}
-      <div className="flex items-center gap-1 px-4 pt-3 pb-2">
-        {tabs.map((t) => (
-          <button
-            key={t.id}
-            type="button"
-            onClick={() => setTab(t.id)}
-            className={cn(
-              "rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
-              tab === t.id
-                ? "bg-accent text-accent-foreground"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted"
-            )}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
+      <TooltipProvider delay={200}>
+        <div className="flex items-center gap-1 px-4 pt-3 pb-2">
+          {tabs.map((t) => (
+            <Tooltip key={t.id}>
+              <TooltipTrigger
+                onClick={() => setTab(t.id)}
+                className={cn(
+                  "rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
+                  tab === t.id
+                    ? "bg-accent text-accent-foreground"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                )}
+              >
+                {t.label}
+              </TooltipTrigger>
+              <TooltipContent>{t.tooltip}</TooltipContent>
+            </Tooltip>
+          ))}
+        </div>
+      </TooltipProvider>
 
       {/* Table header */}
       <div className="grid grid-cols-[2.5rem_1fr_auto] gap-2 px-4 pb-1 text-[10px] uppercase tracking-wider text-muted-foreground font-medium">

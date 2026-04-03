@@ -101,7 +101,12 @@ export function UpdateCenter() {
       <ScrollArea className="flex-1">
         <div className="flex flex-col gap-3 p-4">
           {error && (
-            <p className="text-xs text-destructive">{error}</p>
+            <div className="flex items-center gap-2">
+              <p className="text-xs text-destructive">{error}</p>
+              <Button variant="outline" size="xs" onClick={() => { setError(null); void checkNow() }}>
+                Retry
+              </Button>
+            </div>
           )}
 
           {pendingUpdates.length === 0 && !isChecking && (

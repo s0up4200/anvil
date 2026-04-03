@@ -1,6 +1,6 @@
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Toggle } from "@/components/ui/toggle"
+import { Switch } from "@/components/ui/switch"
 import { cn } from "@/lib/utils"
 import type { SkillFrontmatter } from "@/types"
 
@@ -81,14 +81,11 @@ export function FrontmatterForm({
             Can be triggered directly by the user via a slash command.
           </span>
         </div>
-        <Toggle
-          variant="outline"
-          pressed={userInvocable}
-          onPressedChange={(pressed) => update({ userInvocable: pressed })}
+        <Switch
+          checked={userInvocable}
+          onCheckedChange={(checked) => update({ userInvocable: checked })}
           aria-label="Toggle user-invocable"
-        >
-          {userInvocable ? "On" : "Off"}
-        </Toggle>
+        />
       </div>
 
       {/* Argument hint — shown when user-invocable is on */}

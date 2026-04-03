@@ -58,6 +58,7 @@ export function CommandPalette() {
             <CommandItem onSelect={openSettings}>
               <Settings />
               Open Settings
+              <kbd className="ml-auto text-[10px] tracking-widest text-muted-foreground">⌘,</kbd>
             </CommandItem>
             <CommandItem onSelect={switchTheme}>
               {theme === "dark" ? <Sun /> : <Moon />}
@@ -66,10 +67,12 @@ export function CommandPalette() {
             <CommandItem onSelect={() => { setActiveView("marketplace"); close() }}>
               <Store />
               Open Marketplace
+              <kbd className="ml-auto text-[10px] tracking-widest text-muted-foreground">⌘⇧M</kbd>
             </CommandItem>
             <CommandItem onSelect={() => { setActiveView("updates"); close() }}>
               <RefreshCw />
               Check for Updates
+              <kbd className="ml-auto text-[10px] tracking-widest text-muted-foreground">⌘⇧U</kbd>
             </CommandItem>
           </CommandGroup>
 

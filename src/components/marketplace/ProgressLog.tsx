@@ -32,7 +32,7 @@ export function ProgressLog({ eventName, isRunning }: ProgressLogProps) {
 
   return (
     <ScrollArea className="h-40 rounded border border-border bg-surface p-2">
-      <pre className="text-xs font-mono text-muted-foreground whitespace-pre-wrap">
+      <pre className="text-[13px] font-mono leading-relaxed text-muted-foreground whitespace-pre-wrap">
         {lines.map((line, i) => (
           <div key={i}>{line}</div>
         ))}

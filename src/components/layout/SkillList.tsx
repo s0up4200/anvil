@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react"
-import { Search } from "lucide-react"
+import { Search, X } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -24,7 +24,13 @@ import { useSkillStore } from "@/stores/skillStore"
 import { useUpdateStore } from "@/stores/updateStore"
 import { useSkills } from "@/hooks/useSkills"
 import { deleteSkill, duplicateSkill, getConfig, toggleSkill } from "@/lib/tauri"
-import { getAgentColor } from "@/lib/constants"
+import { getAgentColor, getAgentDisplayName } from "@/lib/constants"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 import type { Skill } from "@/types"
 
@@ -96,8 +102,14 @@ export function SkillList() {
             placeholder="Search skills…"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-7"
+            className={cn("pl-7", searchQuery && "pr-7")}
           />
+          {searchQuery && (
+            <X
+              className="absolute right-2 top-1/2 size-3.5 -translate-y-1/2 cursor-pointer text-muted-foreground hover:text-foreground"
+              onClick={() => setSearchQuery("")}
+            />
+          )}
         </div>
       </div>
 
@@ -150,16 +162,21 @@ export function SkillList() {
                         />
                       )}
                     </span>
-                    <div className="flex shrink-0 items-center gap-0.5">
-                      {skill.agentIds.map((agentId) => (
-                        <span
-                          key={agentId}
-                          className="size-1.5 rounded-full"
-                          style={{ backgroundColor: getAgentColor(agentId) }}
-                          title={agentId}
-                        />
-                      ))}
-                    </div>
+                    <TooltipProvider delay={200}>
+                      <div className="flex shrink-0 items-center gap-0.5">
+                        {skill.agentIds.map((agentId) => (
+                          <Tooltip key={agentId}>
+                            <TooltipTrigger>
+                              <span
+                                className="size-1.5 rounded-full block"
+                                style={{ backgroundColor: getAgentColor(agentId) }}
+                              />
+                            </TooltipTrigger>
+                            <TooltipContent>{getAgentDisplayName(agentId)}</TooltipContent>
+                          </Tooltip>
+                        ))}
+                      </div>
+                    </TooltipProvider>
                   </div>
 
                   {/* Description */}

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
+import { Switch } from "@/components/ui/switch"
 import {
   Dialog,
   DialogContent,
@@ -117,42 +118,36 @@ export function SettingsView() {
               {/* Default scope */}
               <div className="flex flex-col gap-1.5">
                 <p className="text-xs font-medium text-foreground">Default scope</p>
-                <select
-                  value={config.defaultScope}
-                  onChange={(e) => {
-                    const next = { ...config, defaultScope: e.target.value }
-                    setConfig(next)
-                    void saveConfig(next)
-                  }}
-                  className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
-                >
-                  <option value="global">Global</option>
-                  <option value="project">Project</option>
-                </select>
+                <div className="flex gap-2">
+                  {(["global", "project"] as const).map((scope) => (
+                    <Button
+                      key={scope}
+                      variant={config.defaultScope === scope ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => {
+                        const next = { ...config, defaultScope: scope }
+                        setConfig(next)
+                        void saveConfig(next)
+                      }}
+                      className="capitalize"
+                    >
+                      {scope}
+                    </Button>
+                  ))}
+                </div>
               </div>
 
               {/* Confirm before delete */}
               <label className="flex items-center justify-between gap-3">
                 <span className="text-xs font-medium text-foreground">Confirm before delete</span>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={config.confirmBeforeDelete}
-                  onClick={() => {
-                    const next = { ...config, confirmBeforeDelete: !config.confirmBeforeDelete }
+                <Switch
+                  checked={config.confirmBeforeDelete}
+                  onCheckedChange={(checked) => {
+                    const next = { ...config, confirmBeforeDelete: checked }
                     setConfig(next)
                     void saveConfig(next)
                   }}
-                  className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full transition-colors ${
-                    config.confirmBeforeDelete ? "bg-primary" : "bg-input"
-                  }`}
-                >
-                  <span
-                    className={`pointer-events-none block size-4 rounded-full bg-background shadow-sm transition-transform ${
-                      config.confirmBeforeDelete ? "translate-x-4" : "translate-x-0.5"
-                    }`}
-                  />
-                </button>
+                />
               </label>
             </div>
           </TabsContent>

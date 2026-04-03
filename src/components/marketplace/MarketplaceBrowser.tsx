@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { useMarketplace } from "@/hooks/useMarketplace"
@@ -78,7 +79,12 @@ export function MarketplaceBrowser() {
             )}
 
             {searchError && (
-              <p className="text-sm text-destructive">{searchError}</p>
+              <div className="flex items-center gap-2">
+                <p className="text-sm text-destructive">{searchError}</p>
+                <Button variant="outline" size="xs" onClick={() => search(query)}>
+                  Retry
+                </Button>
+              </div>
             )}
 
             {!isSearching && !searchError && results.length === 0 && hasQuery && (
@@ -88,6 +94,10 @@ export function MarketplaceBrowser() {
             )}
 
             {results.length > 0 && (
+              <>
+              <p className="pb-2 text-xs text-muted-foreground">
+                {results.length} {results.length === 1 ? "result" : "results"}
+              </p>
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
                 {results.map((skill) => (
                   <SkillCard
@@ -98,6 +108,7 @@ export function MarketplaceBrowser() {
                   />
                 ))}
               </div>
+              </>
             )}
           </div>
         </ScrollArea>

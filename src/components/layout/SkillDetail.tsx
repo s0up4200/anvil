@@ -59,6 +59,7 @@ export function SkillDetail() {
     setIsSaving(true)
     setError(null)
 
+    const start = Date.now()
     try {
       await updateSkill({
         path: selectedSkill.path,
@@ -70,9 +71,24 @@ export function SkillDetail() {
     } catch (err) {
       setError(getErrorMessage(err))
     } finally {
-      setIsSaving(false)
+      const elapsed = Date.now() - start
+      if (elapsed < 300) {
+        setTimeout(() => setIsSaving(false), 300 - elapsed)
+      } else {
+        setIsSaving(false)
+      }
     }
   }, [selectedSkill, frontmatter, body, isDirty])
+
+  // Warn before closing window with unsaved changes
+  useEffect(() => {
+    if (!isDirty) return
+    function handleBeforeUnload(e: BeforeUnloadEvent) {
+      e.preventDefault()
+    }
+    window.addEventListener("beforeunload", handleBeforeUnload)
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload)
+  }, [isDirty])
 
   // Cmd+S shortcut
   useEffect(() => {
@@ -107,22 +123,45 @@ export function SkillDetail() {
             />
           )}
         </div>
-        <Button
-          size="sm"
-          variant="ghost"
-          disabled={!isDirty || isSaving}
-          onClick={() => void handleSave()}
-          className="gap-1.5"
-        >
-          <Save className="size-3.5" />
-          {isSaving ? "Saving…" : "Save"}
-        </Button>
+        <div className="flex items-center gap-1">
+          {isDirty && (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                setFrontmatter(savedFrontmatter)
+                setBody(savedBody)
+              }}
+              className="gap-1.5 text-muted-foreground"
+            >
+              Discard
+            </Button>
+          )}
+          <Button
+            size="sm"
+            variant="ghost"
+            disabled={!isDirty || isSaving}
+            onClick={() => void handleSave()}
+            className="gap-1.5"
+          >
+            <Save className="size-3.5" />
+            {isSaving ? "Saving…" : "Save"}
+          </Button>
+        </div>
       </div>
 
       {/* Error banner */}
       {error && (
-        <div className="shrink-0 bg-destructive/10 px-4 py-2 text-xs text-destructive">
-          {error}
+        <div className="flex shrink-0 items-center justify-between bg-destructive/10 px-4 py-2">
+          <span className="text-xs text-destructive">{error}</span>
+          <Button
+            variant="ghost"
+            size="xs"
+            onClick={() => void handleSave()}
+            className="text-destructive hover:text-destructive"
+          >
+            Retry
+          </Button>
         </div>
       )}
 
