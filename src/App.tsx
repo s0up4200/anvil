@@ -48,7 +48,7 @@ export default function App() {
   }, [theme])
 
   return (
-    <div className="flex h-screen bg-background text-foreground">
+    <main className="flex h-screen min-w-0 bg-background text-foreground">
       <Sidebar />
       {activeView === "skills" && (
         <>
@@ -65,6 +65,6 @@ export default function App() {
         onCreated={refetch}
       />
       <SettingsView />
-    </div>
+    </main>
   )
 }

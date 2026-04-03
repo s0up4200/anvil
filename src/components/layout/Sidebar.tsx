@@ -68,7 +68,9 @@ export function Sidebar() {
               <span
                 className="size-2 shrink-0 rounded-full"
                 style={{ backgroundColor: isDetected ? color : undefined }}
+                aria-hidden="true"
               />
+              <span className="sr-only">{isDetected ? "Detected" : "Not detected"}</span>
               <span className="flex-1 truncate text-left">{displayName}</span>
               {isDetected && (
                 <Badge variant="secondary" className="tabular-nums">

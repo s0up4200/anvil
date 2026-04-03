@@ -37,19 +37,21 @@ export function FrontmatterForm({
     <div className="flex flex-col gap-4 px-4 py-3">
       {/* Name */}
       <div className="flex flex-col gap-1">
-        <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+        <label htmlFor="skill-name" className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
           Name
         </label>
         <Input
+          id="skill-name"
           value={name}
           onChange={(e) => onNameChange(e.target.value)}
           placeholder="skill-name"
           disabled={!isNew}
           aria-invalid={isNameInvalid}
+          aria-describedby={isNameInvalid ? "skill-name-error" : undefined}
           className={cn(!isNew && "cursor-default opacity-70")}
         />
         {isNameInvalid && (
-          <p className="text-xs text-destructive">
+          <p id="skill-name-error" className="text-xs text-destructive">
             Only lowercase letters, digits, and hyphens are allowed.
           </p>
         )}
@@ -58,7 +60,7 @@ export function FrontmatterForm({
       {/* Description */}
       <div className="flex flex-col gap-1">
         <div className="flex items-center justify-between">
-          <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+          <label htmlFor="skill-description" className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
             Description
           </label>
           <span className="text-xs tabular-nums text-muted-foreground">
@@ -66,6 +68,7 @@ export function FrontmatterForm({
           </span>
         </div>
         <Textarea
+          id="skill-description"
           value={description}
           onChange={(e) => update({ description: e.target.value })}
           placeholder="What does this skill do?"
@@ -91,10 +94,11 @@ export function FrontmatterForm({
       {/* Argument hint — shown when user-invocable is on */}
       {userInvocable && (
         <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+          <label htmlFor="skill-argument-hint" className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
             Argument hint
           </label>
           <Input
+            id="skill-argument-hint"
             value={argumentHint}
             onChange={(e) => update({ argumentHint: e.target.value })}
             placeholder="e.g. <path-to-file>"

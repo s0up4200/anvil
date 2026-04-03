@@ -105,10 +105,14 @@ export function SkillList() {
             className={cn("pl-7", searchQuery && "pr-7")}
           />
           {searchQuery && (
-            <X
-              className="absolute right-2 top-1/2 size-3.5 -translate-y-1/2 cursor-pointer text-muted-foreground hover:text-foreground"
+            <button
+              type="button"
+              aria-label="Clear search"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               onClick={() => setSearchQuery("")}
-            />
+            >
+              <X className="size-3.5" />
+            </button>
           )}
         </div>
       </div>
@@ -126,7 +130,7 @@ export function SkillList() {
         )}
 
         {!isLoading && !error && skills.length === 0 && (
-          <div className="flex h-full flex-col items-center justify-center gap-1 p-6 text-center">
+          <div className="flex h-full flex-col gap-1 p-4">
             <p className="text-sm font-medium text-foreground">No skills found</p>
             <p className="text-xs text-muted-foreground">
               {searchQuery.trim()
@@ -144,7 +148,7 @@ export function SkillList() {
                   type="button"
                   onClick={() => setSelectedSkillId(skill.id)}
                   className={cn(
-                    "flex w-full flex-col gap-0.5 px-3 py-2 text-left transition-colors",
+                    "flex w-full flex-col gap-0.5 px-3 py-2 text-left transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset focus-visible:outline-none",
                     selectedSkillId === skill.id
                       ? "bg-accent text-accent-foreground"
                       : "hover:bg-muted",
@@ -153,13 +157,16 @@ export function SkillList() {
                 >
                   {/* Name + update/agent dots */}
                   <div className="flex items-center justify-between gap-2">
-                    <span className="flex items-center gap-1.5 truncate text-sm font-medium">
+                    <span className="flex items-center gap-1.5 truncate text-sm font-medium" title={skill.name}>
                       {skill.name}
                       {pendingUpdates.some((u) => u.skillName === skill.name) && (
-                        <span
-                          className="size-1.5 shrink-0 rounded-full bg-blue-500"
-                          title="Update available"
-                        />
+                        <>
+                          <span
+                            className="size-1.5 shrink-0 rounded-full bg-status-info"
+                            title="Update available"
+                          />
+                          <span className="sr-only">Update available</span>
+                        </>
                       )}
                     </span>
                     <TooltipProvider delay={200}>

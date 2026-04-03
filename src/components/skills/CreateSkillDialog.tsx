@@ -105,6 +105,7 @@ export function CreateSkillDialog({
               value={name}
               onChange={(e) => setName(e.target.value)}
               aria-invalid={name.trim() !== "" && !isSlugValid}
+              aria-describedby={error ? "create-skill-error" : undefined}
             />
             {name.trim() !== "" && (
               <p className="text-xs text-muted-foreground">
@@ -158,7 +159,7 @@ export function CreateSkillDialog({
           </div>
 
           {error && (
-            <p className="text-xs text-destructive">{error}</p>
+            <p id="create-skill-error" className="text-xs text-destructive">{error}</p>
           )}
         </div>
 

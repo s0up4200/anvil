@@ -25,14 +25,14 @@ export function ProgressLog({ eventName, isRunning }: ProgressLogProps) {
   }, [eventName, isRunning])
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" })
+    bottomRef.current?.scrollIntoView({ behavior: "instant" })
   }, [lines])
 
   if (lines.length === 0 && !isRunning) return null
 
   return (
-    <ScrollArea className="h-40 rounded border border-border bg-surface p-2">
-      <pre className="text-[13px] font-mono leading-relaxed text-muted-foreground whitespace-pre-wrap">
+    <ScrollArea className="h-40 rounded border border-border bg-card p-2">
+      <pre className="text-[13px] font-mono leading-relaxed text-muted-foreground whitespace-pre-wrap" aria-live="polite">
         {lines.map((line, i) => (
           <div key={i}>{line}</div>
         ))}

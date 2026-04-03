@@ -181,7 +181,7 @@ export function SettingsView() {
                       <span
                         className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${
                           agent.detected
-                            ? "bg-green-500/15 text-green-600 dark:text-green-400"
+                            ? "bg-status-pass/15 text-status-pass"
                             : "bg-muted text-muted-foreground"
                         }`}
                       >

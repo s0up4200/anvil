@@ -117,10 +117,13 @@ export function SkillDetail() {
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium">{selectedSkill.name}</span>
           {isDirty && (
-            <span
-              className="size-1.5 rounded-full bg-orange-400"
-              title="Unsaved changes"
-            />
+            <>
+              <span
+                className="size-1.5 rounded-full bg-status-pending"
+                title="Unsaved changes"
+              />
+              <span className="sr-only">Unsaved changes</span>
+            </>
           )}
         </div>
         <div className="flex items-center gap-1">

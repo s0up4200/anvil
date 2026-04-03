@@ -1,3 +1,4 @@
+import { memo } from "react"
 import { Button } from "@/components/ui/button"
 import type { MarketplaceSkill } from "@/types"
 
@@ -7,15 +8,16 @@ interface SkillCardProps {
   onRead: (skill: MarketplaceSkill) => void
 }
 
-export function SkillCard({ skill, onInstall, onRead }: SkillCardProps) {
+export const SkillCard = memo(function SkillCard({ skill, onInstall, onRead }: SkillCardProps) {
   return (
-    <div
-      className="flex flex-col gap-2 rounded-lg border border-border bg-surface p-4 cursor-pointer hover:border-foreground/20 transition-colors"
+    <button
+      type="button"
+      className="text-left flex flex-col gap-2 rounded-lg border border-border bg-card p-4 cursor-pointer hover:border-foreground/20 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none transition-colors"
       onClick={() => onRead(skill)}
     >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <h3 className="truncate text-sm font-medium text-foreground">
+          <h3 className="truncate text-sm font-medium text-foreground" title={skill.name}>
             {skill.name}
           </h3>
           <p className="truncate text-xs text-muted-foreground">
@@ -39,7 +41,7 @@ export function SkillCard({ skill, onInstall, onRead }: SkillCardProps) {
             href={skill.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs text-accent hover:underline truncate"
+            className="text-xs text-muted-foreground hover:text-foreground hover:underline truncate"
             onClick={(e) => e.stopPropagation()}
           >
             skills.sh
@@ -58,6 +60,6 @@ export function SkillCard({ skill, onInstall, onRead }: SkillCardProps) {
           Install
         </Button>
       </div>
-    </div>
+    </button>
   )
-}
+})

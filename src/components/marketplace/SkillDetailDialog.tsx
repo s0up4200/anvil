@@ -19,9 +19,9 @@ const labelClass =
 
 function auditBadgeClass(status: string): string {
   const base = "text-[10px] px-1.5 py-0"
-  if (status === "PASS") return `text-green-500 border-green-500/30 ${base}`
-  if (status === "WARN") return `text-yellow-500 border-yellow-500/30 ${base}`
-  return `text-red-500 border-red-500/30 ${base}`
+  if (status === "PASS") return `text-status-pass border-status-pass/30 ${base}`
+  if (status === "WARN") return `text-status-warn border-status-warn/30 ${base}`
+  return `text-status-fail border-status-fail/30 ${base}`
 }
 
 interface SkillDetailDialogProps {
@@ -215,7 +215,7 @@ export function SkillDetailDialog({
               href={skill.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-xs text-accent hover:underline self-center"
+              className="text-xs text-muted-foreground hover:text-foreground hover:underline self-center"
             >
               skills.sh
             </a>

@@ -56,16 +56,21 @@ export function SkillsLeaderboard({ onInstall, onRead }: SkillsLeaderboardProps)
         <div className="flex items-center gap-1 px-4 pt-3 pb-2">
           {tabs.map((t) => (
             <Tooltip key={t.id}>
-              <TooltipTrigger
-                onClick={() => setTab(t.id)}
-                className={cn(
-                  "rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
-                  tab === t.id
-                    ? "bg-accent text-accent-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                )}
-              >
-                {t.label}
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={tab === t.id}
+                  onClick={() => setTab(t.id)}
+                  className={cn(
+                    "rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
+                    tab === t.id
+                      ? "bg-accent text-accent-foreground"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  )}
+                >
+                  {t.label}
+                </button>
               </TooltipTrigger>
               <TooltipContent>{t.tooltip}</TooltipContent>
             </Tooltip>
@@ -84,17 +89,17 @@ export function SkillsLeaderboard({ onInstall, onRead }: SkillsLeaderboardProps)
       <ScrollArea className="flex-1">
         <div className="px-4 pb-4">
           {isLoading && (
-            <p className="text-sm text-muted-foreground animate-pulse py-8 text-center">
+            <p className="text-sm text-muted-foreground animate-pulse px-3 py-4">
               Loading leaderboard...
             </p>
           )}
 
           {tabError && (
-            <p className="text-sm text-destructive py-8 text-center">{tabError}</p>
+            <p className="text-sm text-destructive px-3 py-4">{tabError}</p>
           )}
 
           {!isLoading && !tabError && skills.length === 0 && (
-            <p className="text-sm text-muted-foreground py-8 text-center">
+            <p className="text-sm text-muted-foreground px-3 py-4">
               No skills found.
             </p>
           )}
@@ -112,10 +117,10 @@ export function SkillsLeaderboard({ onInstall, onRead }: SkillsLeaderboardProps)
                   {skill.rank}
                 </span>
                 <div className="min-w-0">
-                  <span className="block truncate text-sm font-medium text-foreground">
+                  <span className="block truncate text-sm font-medium text-foreground" title={skill.name}>
                     {skill.name}
                   </span>
-                  <span className="block truncate text-xs text-muted-foreground">
+                  <span className="block truncate text-xs text-muted-foreground" title={skill.source}>
                     {skill.source}
                   </span>
                 </div>
@@ -126,7 +131,7 @@ export function SkillsLeaderboard({ onInstall, onRead }: SkillsLeaderboardProps)
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-6 px-2 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="h-6 px-2 text-xs opacity-0 group-hover:opacity-100 focus:opacity-100 group-focus-within:opacity-100 transition-opacity"
                     onClick={(e) => {
                       e.stopPropagation()
                       onInstall(ms)

@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { lazy, Suspense, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -6,7 +6,7 @@ import { useMarketplace } from "@/hooks/useMarketplace"
 import { SkillCard } from "./SkillCard"
 import { SkillsLeaderboard } from "./SkillsLeaderboard"
 import { MarketplaceInstallDialog } from "./MarketplaceInstallDialog"
-import { SkillDetailDialog } from "./SkillDetailDialog"
+const SkillDetailDialog = lazy(() => import("./SkillDetailDialog").then(m => ({ default: m.SkillDetailDialog })))
 import type { MarketplaceSkill } from "@/types"
 
 export function MarketplaceBrowser() {
@@ -53,7 +53,7 @@ export function MarketplaceBrowser() {
 
       {/* CLI unavailable banner */}
       {cliAvailable === false && (
-        <div className="border-b border-border bg-surface px-4 py-2">
+        <div className="border-b border-border bg-card px-4 py-2">
           <p className="text-xs text-muted-foreground">
             Marketplace requires the skills CLI.{" "}
             <span className="text-foreground">
@@ -114,12 +114,14 @@ export function MarketplaceBrowser() {
         </ScrollArea>
       )}
 
-      <SkillDetailDialog
-        skill={detailTarget}
-        open={detailOpen}
-        onOpenChange={setDetailOpen}
-        onInstall={handleInstall}
-      />
+      <Suspense fallback={null}>
+        <SkillDetailDialog
+          skill={detailTarget}
+          open={detailOpen}
+          onOpenChange={setDetailOpen}
+          onInstall={handleInstall}
+        />
+      </Suspense>
 
       <MarketplaceInstallDialog
         open={installDialogOpen}

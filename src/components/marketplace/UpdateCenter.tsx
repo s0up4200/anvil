@@ -110,7 +110,7 @@ export function UpdateCenter() {
           )}
 
           {pendingUpdates.length === 0 && !isChecking && (
-            <div className="flex flex-col items-center justify-center gap-2 py-16 text-center">
+            <div className="flex flex-col gap-2 p-6">
               <p className="text-sm text-muted-foreground">
                 All skills are up to date
               </p>
@@ -128,7 +128,7 @@ export function UpdateCenter() {
             return (
               <div
                 key={update.skillName}
-                className="flex items-center justify-between rounded-lg border border-border bg-surface px-4 py-3"
+                className="flex items-center justify-between rounded-lg border border-border bg-card px-4 py-3"
               >
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-foreground">

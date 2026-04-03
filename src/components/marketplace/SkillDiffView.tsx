@@ -18,6 +18,7 @@ export function SkillDiffView({ diff, onClose }: SkillDiffViewProps) {
           Changes for &ldquo;{diff.skillName}&rdquo;
         </h3>
         <button
+          type="button"
           onClick={onClose}
           className="text-xs text-muted-foreground hover:text-foreground"
         >
@@ -28,7 +29,7 @@ export function SkillDiffView({ diff, onClose }: SkillDiffViewProps) {
       <div className="grid grid-cols-2 gap-px rounded border border-border overflow-hidden">
         {/* Local */}
         <div className="flex flex-col">
-          <div className="bg-surface px-2 py-1 text-xs font-medium text-muted-foreground border-b border-border">
+          <div className="bg-card px-2 py-1 text-xs font-medium text-muted-foreground border-b border-border">
             Local
           </div>
           <ScrollArea className="h-64">
@@ -52,7 +53,7 @@ export function SkillDiffView({ diff, onClose }: SkillDiffViewProps) {
 
         {/* Remote */}
         <div className="flex flex-col">
-          <div className="bg-surface px-2 py-1 text-xs font-medium text-muted-foreground border-b border-border">
+          <div className="bg-card px-2 py-1 text-xs font-medium text-muted-foreground border-b border-border">
             Remote
           </div>
           <ScrollArea className="h-64">
