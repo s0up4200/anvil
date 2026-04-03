@@ -109,7 +109,7 @@ export function SkillDetailDialog({
 
         <div className="flex flex-1 min-h-0 gap-4">
           {/* Main content */}
-          <div className="flex-1 min-w-0 overflow-auto rounded-md border border-border p-4">
+          <div className="flex-1 min-w-0 overflow-auto p-4">
             {loading && (
               <p className="text-sm text-muted-foreground animate-pulse">
                 Loading...
@@ -122,7 +122,7 @@ export function SkillDetailDialog({
               <div className="space-y-4">
                 {/* Summary */}
                 {metadata?.summaryHtml && (
-                  <div className="rounded-md border border-border bg-muted/30 p-3">
+                  <div className="rounded-md border border-border bg-muted/30 px-4 py-3">
                     <p className={`${labelClass} mb-2`}>Summary</p>
                     <div
                       className="prose dark:prose-invert prose-sm max-w-none prose-p:my-1 prose-ul:my-1 prose-li:my-0"
@@ -143,7 +143,8 @@ export function SkillDetailDialog({
 
           {/* Sidebar */}
           {!loading && metadata && (
-            <div className="hidden sm:flex w-48 shrink-0 flex-col gap-4 overflow-auto text-sm">
+            <div className="hidden sm:flex w-48 shrink-0 flex-col text-sm">
+              <div className="flex-1 min-h-0 overflow-auto pr-3 flex flex-col gap-4">
               {metadata.weeklyInstalls && (
                 <div>
                   <p className={`${labelClass} mb-1`}>Weekly Installs</p>
@@ -230,8 +231,9 @@ export function SkillDetailDialog({
                   </div>
                 </div>
               )}
+              </div>
 
-              <div className="mt-auto pt-4">
+              <div className="shrink-0 pt-4 pr-3">
                 <Button onClick={handleInstall} className="w-full">Install</Button>
               </div>
             </div>
