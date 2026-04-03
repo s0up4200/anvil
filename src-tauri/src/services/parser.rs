@@ -1,7 +1,7 @@
 use crate::error::AppError;
 use crate::models::skill::SkillFrontmatter;
 
-const FRONTMATTER_MAX_BYTES: usize = 1024;
+const FRONTMATTER_MAX_BYTES: usize = 4096;
 
 /// Parse a SKILL.md file's raw content into its frontmatter and body.
 ///
@@ -156,7 +156,7 @@ Some body content.
 
     #[test]
     fn parse_frontmatter_too_large() {
-        let big_desc = "x".repeat(1025);
+        let big_desc = "x".repeat(4097);
         let raw = format!("---\ndescription: {big_desc}\n---\nBody.\n");
         let err = parse_skill_content(&raw).expect_err("should fail for large frontmatter");
         assert!(

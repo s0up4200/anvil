@@ -22,7 +22,7 @@ pub enum AppError {
     #[error("Invalid input: {0}")]
     InvalidInput(String),
 
-    #[error("Frontmatter too large: {0} bytes (max 1024)")]
+    #[error("Frontmatter too large: {0} bytes (max 4096)")]
     FrontmatterTooLarge(usize),
 
     #[error("Symlink permission denied: {0}")]

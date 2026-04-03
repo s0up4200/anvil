@@ -68,7 +68,7 @@ The scanner does NOT scan `~/.agents/skills/` directly. It finds marketplace ski
 
 ## Gotchas
 
-- Skill frontmatter max 1024 bytes (enforced in parser.rs)
+- Skill frontmatter max 4096 bytes (enforced in parser.rs)
 - Skill toggle: renames SKILL.md ↔ SKILL.md.disabled (not a flag)
 - Skills deduped by resolved symlink path — same skill across agents shows once
 - 7 hardcoded agents (claude-code, codex, opencode, gemini-cli, windsurf, amp, vscode-copilot); custom agents via ~/.anvil/config.json

@@ -6,7 +6,15 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function getErrorMessage(err: unknown): string {
-  return err instanceof Error ? err.message : String(err)
+  if (err instanceof Error) return err.message
+  if (typeof err === "string") return err
+  if (err != null && typeof err === "object" && "message" in err) {
+    return String((err as { message: unknown }).message)
+  }
+  if (err != null && typeof err === "object") {
+    try { return JSON.stringify(err) } catch { /* fall through */ }
+  }
+  return String(err)
 }
 
 export function resolveTheme(theme: "dark" | "light" | "system"): "dark" | "light" {
