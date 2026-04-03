@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from "react"
-import { Save } from "lucide-react"
+import Markdown from "react-markdown"
+import remarkGfm from "remark-gfm"
+import { Pencil, Save } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { FrontmatterForm } from "@/components/editor/FrontmatterForm"
 import { SkillEditor } from "@/components/editor/SkillEditor"
@@ -24,6 +26,7 @@ export function SkillDetail() {
   const [savedBody, setSavedBody] = useState("")
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [mode, setMode] = useState<"preview" | "edit">("preview")
 
   // Fetch full content whenever selection changes
   useEffect(() => {
@@ -33,9 +36,11 @@ export function SkillDetail() {
       setSavedFrontmatter({})
       setSavedBody("")
       setError(null)
+      setMode("preview")
       return
     }
 
+    setMode("preview")
     getSkill(selectedSkill.path)
       .then(([fm, b]) => {
         setFrontmatter(fm)
@@ -52,6 +57,11 @@ export function SkillDetail() {
   const isDirty =
     JSON.stringify(frontmatter) !== JSON.stringify(savedFrontmatter) ||
     body !== savedBody
+
+  const handleDiscard = useCallback(() => {
+    setFrontmatter(savedFrontmatter)
+    setBody(savedBody)
+  }, [savedFrontmatter, savedBody])
 
   const handleSave = useCallback(async () => {
     if (!selectedSkill || !isDirty) return
@@ -106,7 +116,7 @@ export function SkillDetail() {
   if (!selectedSkill) {
     return (
       <div className="flex flex-1 items-center justify-center bg-background text-muted-foreground">
-        <p className="text-sm">Select a skill to edit</p>
+        <p className="text-sm">Select a skill to view</p>
       </div>
     )
   }
@@ -128,29 +138,51 @@ export function SkillDetail() {
           )}
         </div>
         <div className="flex items-center gap-1">
-          {isDirty && (
+          {mode === "preview" ? (
             <Button
               size="sm"
               variant="ghost"
-              onClick={() => {
-                setFrontmatter(savedFrontmatter)
-                setBody(savedBody)
-              }}
-              className="gap-1.5 text-muted-foreground"
+              onClick={() => setMode("edit")}
+              className="gap-1.5"
             >
-              Discard
+              <Pencil className="size-3.5" />
+              Edit
             </Button>
+          ) : (
+            <>
+              {isDirty && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={handleDiscard}
+                  className="gap-1.5 text-muted-foreground"
+                >
+                  Discard
+                </Button>
+              )}
+              <Button
+                size="sm"
+                variant="ghost"
+                disabled={!isDirty || isSaving}
+                onClick={() => void handleSave()}
+                className="gap-1.5"
+              >
+                <Save className="size-3.5" />
+                {isSaving ? "Saving…" : "Save"}
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  if (isDirty) handleDiscard()
+                  setMode("preview")
+                }}
+                className="gap-1.5 text-muted-foreground"
+              >
+                Done
+              </Button>
+            </>
           )}
-          <Button
-            size="sm"
-            variant="ghost"
-            disabled={!isDirty || isSaving}
-            onClick={() => void handleSave()}
-            className="gap-1.5"
-          >
-            <Save className="size-3.5" />
-            {isSaving ? "Saving…" : "Save"}
-          </Button>
         </div>
       </div>
 
@@ -169,24 +201,31 @@ export function SkillDetail() {
         </div>
       )}
 
-      {/* Scrollable form + editor */}
-      <div className="flex flex-1 flex-col overflow-auto">
-        <FrontmatterForm
-          name={selectedSkill.name}
-          onNameChange={() => {
-            /* name is read-only for existing skills */
-          }}
-          frontmatter={frontmatter}
-          onFrontmatterChange={setFrontmatter}
-          isNew={false}
-        />
-
-        <div className="mx-4 mb-2 border-t border-border" />
-
-        <div className="flex-1 overflow-auto">
-          <SkillEditor value={body} onChange={setBody} theme={resolvedTheme} />
+      {mode === "preview" ? (
+        /* Rendered markdown preview */
+        <div className="flex-1 overflow-auto p-4">
+          <div className="prose dark:prose-invert prose-sm max-w-none">
+            <Markdown remarkPlugins={[remarkGfm]}>{body}</Markdown>
+          </div>
         </div>
-      </div>
+      ) : (
+        /* Editable form + code editor */
+        <div className="flex flex-1 flex-col overflow-auto">
+          <FrontmatterForm
+            name={selectedSkill.name}
+            onNameChange={() => {}}
+            frontmatter={frontmatter}
+            onFrontmatterChange={setFrontmatter}
+            isNew={false}
+          />
+
+          <div className="mx-4 mb-2 border-t border-border" />
+
+          <div className="flex-1 overflow-auto">
+            <SkillEditor value={body} onChange={setBody} theme={resolvedTheme} />
+          </div>
+        </div>
+      )}
     </div>
   )
 }
