@@ -62,6 +62,7 @@ pub struct AgentInstalls {
 pub struct SkillAudit {
     pub name: String,
     pub status: String,
+    pub url: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

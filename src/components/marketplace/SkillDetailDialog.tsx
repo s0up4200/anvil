@@ -7,7 +7,6 @@ import { Badge } from "@/components/ui/badge"
 import {
   Dialog,
   DialogContent,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
@@ -21,10 +20,11 @@ const labelClass =
 const AUDIT_STATUS_COLORS: Record<string, string> = {
   PASS: "text-status-pass border-status-pass/10 bg-status-pass/10",
   WARN: "text-status-warn border-status-warn/10 bg-status-warn/10",
+  FAIL: "text-status-fail border-status-fail/10 bg-status-fail/10",
 }
 
 function auditBadgeClass(status: string): string {
-  const color = AUDIT_STATUS_COLORS[status] ?? "text-status-fail border-status-fail/10 bg-status-fail/10"
+  const color = AUDIT_STATUS_COLORS[status] ?? AUDIT_STATUS_COLORS.FAIL
   return `${color} text-[10px] w-14 justify-center px-1.5 py-0`
 }
 
@@ -143,7 +143,7 @@ export function SkillDetailDialog({
 
           {/* Sidebar */}
           {!loading && metadata && (
-            <div className="hidden sm:flex w-44 shrink-0 flex-col gap-4 overflow-auto text-sm">
+            <div className="hidden sm:flex w-48 shrink-0 flex-col gap-4 overflow-auto text-sm">
               {metadata.weeklyInstalls && (
                 <div>
                   <p className={`${labelClass} mb-1`}>Weekly Installs</p>
@@ -162,6 +162,20 @@ export function SkillDetailDialog({
                   {skill?.source}
                 </a>
               </div>
+
+              {skill?.url && (
+                <div>
+                  <p className={`${labelClass} mb-1`}>Skill Page</p>
+                  <a
+                    href={skill.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-foreground hover:underline"
+                  >
+                    skills.sh
+                  </a>
+                </div>
+              )}
 
               {metadata.githubStars && (
                 <div>
@@ -183,7 +197,14 @@ export function SkillDetailDialog({
                   <div className="flex flex-col gap-1">
                     {metadata.audits.map((audit) => (
                       <div key={audit.name} className="flex items-center justify-between gap-2">
-                        <span className="text-xs text-muted-foreground truncate">{audit.name}</span>
+                        <a
+                          href={audit.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-foreground hover:underline"
+                        >
+                          {audit.name}
+                        </a>
                         <Badge
                           variant="outline"
                           className={auditBadgeClass(audit.status)}
@@ -209,25 +230,13 @@ export function SkillDetailDialog({
                   </div>
                 </div>
               )}
+
+              <div className="mt-auto pt-4">
+                <Button onClick={handleInstall} className="w-full">Install</Button>
+              </div>
             </div>
           )}
         </div>
-
-        <DialogFooter className="sm:justify-between">
-          {skill?.url ? (
-            <a
-              href={skill.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs text-muted-foreground hover:text-foreground hover:underline self-center"
-            >
-              skills.sh
-            </a>
-          ) : (
-            <span />
-          )}
-          <Button onClick={handleInstall}>Install</Button>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   )

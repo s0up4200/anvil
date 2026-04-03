@@ -366,9 +366,12 @@ pub async fn fetch_skill_metadata(source: String, skill: String) -> Result<Skill
         let mut result = Vec::new();
         if let Some(section_start) = body.find("Security Audits") {
             let section = &body[section_start..body.len().min(section_start + 2000)];
-            // Each audit is like: "children":"Gen Agent Trust Hub"}],...,"children":"Pass"
-            let audit_names = ["Gen Agent Trust Hub", "Socket", "Snyk"];
-            for name in &audit_names {
+            let audit_names = [
+                ("Gen Agent Trust Hub", "agent-trust-hub"),
+                ("Socket", "socket"),
+                ("Snyk", "snyk"),
+            ];
+            for (name, slug) in &audit_names {
                 if let Some(name_idx) = section.find(name) {
                     let after = &section[name_idx..section.len().min(name_idx + 300)];
                     let status = if after.contains("Pass") || after.contains("PASS") {
@@ -383,6 +386,7 @@ pub async fn fetch_skill_metadata(source: String, skill: String) -> Result<Skill
                     result.push(SkillAudit {
                         name: name.to_string(),
                         status: status.to_string(),
+                        url: format!("https://skills.sh/{source}/{skill}/security/{slug}"),
                     });
                 }
             }

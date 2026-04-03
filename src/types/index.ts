@@ -125,6 +125,7 @@ export interface AgentInstalls {
 export interface SkillAudit {
   name: string;
   status: string;
+  url: string;
 }
 
 export interface MarketplaceSkill {
