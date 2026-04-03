@@ -69,7 +69,14 @@ export function SkillDetailDialog({
         <DialogHeader>
           <DialogTitle>{skill?.name ?? "Skill"}</DialogTitle>
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <span>{skill?.source}</span>
+            <a
+              href={`https://github.com/${skill?.source}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:underline"
+            >
+              {skill?.source}
+            </a>
             <span>&middot;</span>
             <span>{skill?.installCount}</span>
           </div>
