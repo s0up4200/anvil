@@ -350,6 +350,11 @@
     border-radius: var(--radius);
 }
 
+/* Override highlight.js theme background to match our design system */
+.prose .hljs {
+    background: var(--muted);
+}
+
 /* Blockquotes — left border uses amber tint */
 .prose :where(blockquote):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
     border-left-color: oklch(0.60 0.195 52 / 40%);

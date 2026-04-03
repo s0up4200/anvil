@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import Markdown from "react-markdown"
 import remarkGfm from "remark-gfm"
+import rehypeHighlight from "rehype-highlight"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -132,7 +133,7 @@ export function SkillDetailDialog({
 
                 {/* SKILL.md */}
                 <div className="prose dark:prose-invert prose-sm max-w-none">
-                  <Markdown remarkPlugins={[remarkGfm]}>
+                  <Markdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>
                     {content.replace(/^---\n[\s\S]*?\n---\n*/, "")}
                   </Markdown>
                 </div>

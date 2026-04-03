@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from "react"
 import Markdown from "react-markdown"
 import remarkGfm from "remark-gfm"
+import rehypeHighlight from "rehype-highlight"
+import "highlight.js/styles/github-dark.css"
 import { Pencil, Save } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { FrontmatterForm } from "@/components/editor/FrontmatterForm"
@@ -205,7 +207,7 @@ export function SkillDetail() {
         /* Rendered markdown preview */
         <div className="flex-1 overflow-auto p-4">
           <div className="prose dark:prose-invert prose-sm max-w-none">
-            <Markdown remarkPlugins={[remarkGfm]}>{body}</Markdown>
+            <Markdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>{body}</Markdown>
           </div>
         </div>
       ) : (
