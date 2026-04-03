@@ -1,24 +1,27 @@
 import { useEffect, useState } from "react"
-import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import {
   Dialog,
   DialogContent,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  TabsContent,
-} from "@/components/ui/tabs"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { useUIStore, type Theme } from "@/stores/uiStore"
 import { useAgentStore } from "@/stores/agentStore"
 import { getConfig, saveConfig } from "@/lib/tauri"
-import { getAgentDisplayName } from "@/lib/constants"
-import { getErrorMessage } from "@/lib/utils"
+import { getAgentDisplayName, getAgentColor } from "@/lib/constants"
+import { cn } from "@/lib/utils"
+import {
+  Sun,
+  Moon,
+  Monitor,
+  Palette,
+  SlidersHorizontal,
+  Bot,
+  Globe,
+} from "lucide-react"
+import type { LucideIcon } from "lucide-react"
 import type { AppConfig } from "@/types"
 
 const DEFAULT_CONFIG: AppConfig = {
@@ -32,172 +35,198 @@ const DEFAULT_CONFIG: AppConfig = {
   checkForSkillUpdates: false,
 }
 
+const themeOptions: { value: Theme; icon: LucideIcon; label: string }[] = [
+  { value: "light", icon: Sun, label: "Light" },
+  { value: "dark", icon: Moon, label: "Dark" },
+  { value: "system", icon: Monitor, label: "System" },
+]
+
+// ── Shared sub-components ──
+
+interface SectionHeaderProps {
+  icon: LucideIcon
+  label: string
+}
+
+function SectionHeader({ icon: Icon, label }: SectionHeaderProps): React.ReactNode {
+  return (
+    <div className="flex items-center gap-1.5 mb-2">
+      <Icon className="size-3.5 text-muted-foreground" />
+      <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+        {label}
+      </span>
+    </div>
+  )
+}
+
+interface ToggleRowProps {
+  label: string
+  description: string
+  checked: boolean
+  onCheckedChange: (checked: boolean) => void
+}
+
+function ToggleRow({ label, description, checked, onCheckedChange }: ToggleRowProps): React.ReactNode {
+  return (
+    <label className="flex items-center justify-between gap-3 px-4 py-3 cursor-pointer">
+      <div className="flex flex-col gap-0.5">
+        <span className="text-xs font-medium text-foreground">{label}</span>
+        <span className="text-[11px] text-muted-foreground">{description}</span>
+      </div>
+      <Switch checked={checked} onCheckedChange={onCheckedChange} />
+    </label>
+  )
+}
+
+// ── Main component ──
+
 export function SettingsView() {
   const { settingsOpen, setSettingsOpen, theme, setTheme } = useUIStore()
   const { agents } = useAgentStore()
 
   const [config, setConfig] = useState<AppConfig>(DEFAULT_CONFIG)
-  const [isSaving, setIsSaving] = useState(false)
-  const [error, setError] = useState<string | null>(null)
 
   // Load config when dialog opens.
   useEffect(() => {
     if (!settingsOpen) return
     getConfig()
-      .then((cfg) => {
-        setConfig(cfg)
-      })
+      .then(setConfig)
       .catch((err: unknown) => {
         console.error("Failed to load config:", err)
       })
   }, [settingsOpen])
 
-  function handleOpenChange(next: boolean) {
-    setSettingsOpen(next)
-    if (!next) {
-      setError(null)
-    }
-  }
-
-  async function handleSave() {
-    setIsSaving(true)
-    setError(null)
-    try {
-      await saveConfig(config)
-      setSettingsOpen(false)
-    } catch (err) {
-      setError(getErrorMessage(err))
-    } finally {
-      setIsSaving(false)
-    }
+  function updateConfig(patch: Partial<AppConfig>): void {
+    const next = { ...config, ...patch }
+    setConfig(next)
+    void saveConfig(next)
   }
 
   return (
-    <Dialog open={settingsOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-lg" showCloseButton>
+    <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+      <DialogContent className="sm:max-w-[28rem] h-[min(32rem,85vh)] flex flex-col" showCloseButton>
         <DialogHeader>
           <DialogTitle>Settings</DialogTitle>
         </DialogHeader>
 
-        <Tabs defaultValue="appearance">
-          <TabsList>
-            <TabsTrigger value="appearance">Appearance</TabsTrigger>
-            <TabsTrigger value="behavior">Behavior</TabsTrigger>
-            <TabsTrigger value="agents">Agents</TabsTrigger>
-          </TabsList>
+        <ScrollArea className="flex-1 min-h-0 -mx-4 px-4">
+          <div className="flex flex-col gap-6 pb-2">
+            {/* ── Theme ── */}
+            <section>
+              <SectionHeader icon={Palette} label="Theme" />
+              <div className="grid grid-cols-3 gap-2">
+                {themeOptions.map(({ value, icon: Icon, label }) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => {
+                      setTheme(value)
+                      updateConfig({ theme: value })
+                    }}
+                    className={cn(
+                      "flex flex-col items-center gap-1.5 rounded-lg border px-3 py-2.5 text-xs font-medium transition-all",
+                      theme === value
+                        ? "border-primary bg-primary/5 text-foreground ring-1 ring-primary/20"
+                        : "border-border bg-card text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                    )}
+                  >
+                    <Icon className="size-4" />
+                    <span>{label}</span>
+                  </button>
+                ))}
+              </div>
+            </section>
 
-          {/* Appearance tab */}
-          <TabsContent value="appearance">
-            <div className="flex flex-col gap-4 pt-2">
-              {/* Theme selector */}
-              <div className="flex flex-col gap-1.5">
-                <p className="text-xs font-medium text-foreground">Theme</p>
-                <div className="flex gap-2">
-                  {(["dark", "light", "system"] as Theme[]).map((t) => (
-                    <Button
-                      key={t}
-                      variant={theme === t ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => {
-                        setTheme(t)
-                        setConfig((prev) => ({ ...prev, theme: t }))
-                        void saveConfig({ ...config, theme: t })
-                      }}
-                      className="capitalize"
-                    >
-                      {t}
-                    </Button>
-                  ))}
+            {/* ── Default Scope ── */}
+            <section>
+              <SectionHeader icon={Globe} label="Default Scope" />
+              <div className="rounded-lg border border-border bg-muted/30 px-4 py-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-xs font-medium text-foreground">New skill scope</span>
+                    <span className="text-[11px] text-muted-foreground">
+                      Where new skills are created by default
+                    </span>
+                  </div>
+                  <div className="flex gap-1.5">
+                    {(["global", "project"] as const).map((scope) => (
+                      <button
+                        key={scope}
+                        type="button"
+                        onClick={() => updateConfig({ defaultScope: scope })}
+                        className={cn(
+                          "rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
+                          config.defaultScope === scope
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-muted text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        {scope === "global" ? "Global" : "Project"}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
-          </TabsContent>
+            </section>
 
-          {/* Behavior tab */}
-          <TabsContent value="behavior">
-            <div className="flex flex-col gap-4 pt-2">
-              {/* Default scope */}
-              <div className="flex flex-col gap-1.5">
-                <p className="text-xs font-medium text-foreground">Default scope</p>
-                <div className="flex gap-2">
-                  {(["global", "project"] as const).map((scope) => (
-                    <Button
-                      key={scope}
-                      variant={config.defaultScope === scope ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => {
-                        const next = { ...config, defaultScope: scope }
-                        setConfig(next)
-                        void saveConfig(next)
-                      }}
-                      className="capitalize"
-                    >
-                      {scope}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Check for skill updates on startup */}
-              <label className="flex items-center justify-between gap-3">
-                <span className="text-xs font-medium text-foreground">Check for skill updates on startup</span>
-                <Switch
+            {/* ── Preferences ── */}
+            <section>
+              <SectionHeader icon={SlidersHorizontal} label="Preferences" />
+              <div className="rounded-lg border border-border divide-y divide-border">
+                <ToggleRow
+                  label="Check for skill updates"
+                  description="Automatically check on startup"
                   checked={config.checkForSkillUpdates}
-                  onCheckedChange={(checked) => {
-                    const next = { ...config, checkForSkillUpdates: checked }
-                    setConfig(next)
-                    void saveConfig(next)
-                  }}
+                  onCheckedChange={(checked) => updateConfig({ checkForSkillUpdates: checked })}
                 />
-              </label>
-
-              {/* Confirm before delete */}
-              <label className="flex items-center justify-between gap-3">
-                <span className="text-xs font-medium text-foreground">Confirm before delete</span>
-                <Switch
+                <ToggleRow
+                  label="Confirm before delete"
+                  description="Show a confirmation dialog when removing skills"
                   checked={config.confirmBeforeDelete}
-                  onCheckedChange={(checked) => {
-                    const next = { ...config, confirmBeforeDelete: checked }
-                    setConfig(next)
-                    void saveConfig(next)
-                  }}
+                  onCheckedChange={(checked) => updateConfig({ confirmBeforeDelete: checked })}
                 />
-              </label>
-            </div>
-          </TabsContent>
+              </div>
+            </section>
 
-          {/* Agents tab */}
-          <TabsContent value="agents">
-            <div className="flex flex-col gap-2 pt-2">
+            {/* ── Agents ── */}
+            <section>
+              <SectionHeader icon={Bot} label="Agents" />
               {agents.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No agents found.</p>
+                <div className="rounded-lg border border-border bg-muted/30 px-4 py-6 text-center">
+                  <p className="text-xs text-muted-foreground">No agents found on this system.</p>
+                </div>
               ) : (
-                <div className="flex flex-col divide-y divide-border rounded-lg border">
+                <div className="rounded-lg border border-border divide-y divide-border">
                   {agents.map((agent) => (
                     <div
                       key={agent.id}
-                      className="flex items-start justify-between gap-3 px-3 py-2"
+                      className="flex items-center gap-3 px-4 py-2.5"
                     >
-                      <div className="flex flex-col gap-0.5 min-w-0">
-                        <span className="text-sm font-medium">
+                      <span
+                        className="size-2 shrink-0 rounded-full"
+                        style={{ backgroundColor: getAgentColor(agent.id) }}
+                      />
+                      <div className="flex flex-col gap-0.5 min-w-0 flex-1">
+                        <span className="text-xs font-medium text-foreground">
                           {getAgentDisplayName(agent.id)}
                         </span>
                         {agent.skillsPath ? (
-                          <span className="truncate text-xs text-muted-foreground">
+                          <span className="truncate text-[11px] text-muted-foreground font-mono">
                             {agent.skillsPath}
                           </span>
                         ) : (
-                          <span className="text-xs text-muted-foreground italic">
+                          <span className="text-[11px] text-muted-foreground italic">
                             Path unavailable
                           </span>
                         )}
                       </div>
                       <span
-                        className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                        className={cn(
+                          "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium",
                           agent.detected
                             ? "bg-status-pass/15 text-status-pass"
                             : "bg-muted text-muted-foreground"
-                        }`}
+                        )}
                       >
                         {agent.detected ? "Detected" : "Not found"}
                       </span>
@@ -205,22 +234,9 @@ export function SettingsView() {
                   ))}
                 </div>
               )}
-            </div>
-          </TabsContent>
-        </Tabs>
-
-        {error && (
-          <p className="text-xs text-destructive">{error}</p>
-        )}
-
-        <DialogFooter showCloseButton>
-          <Button
-            onClick={() => void handleSave()}
-            disabled={isSaving}
-          >
-            {isSaving ? "Saving…" : "Save"}
-          </Button>
-        </DialogFooter>
+            </section>
+          </div>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   )
