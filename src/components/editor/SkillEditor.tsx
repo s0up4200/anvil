@@ -4,13 +4,12 @@ import { languages } from "@codemirror/language-data"
 import { EditorView } from "@codemirror/view"
 import { search } from "@codemirror/search"
 import { lineNumbers } from "@codemirror/view"
+import { anvilTheme, anvilThemeLight } from "./editorTheme"
 
 interface SkillEditorProps {
   value: string
   onChange: (value: string) => void
-  /** Optional: make the editor read-only */
   readOnly?: boolean
-  /** CodeMirror theme — "dark" or "light" */
   theme?: "dark" | "light"
 }
 
@@ -28,7 +27,7 @@ export function SkillEditor({ value, onChange, readOnly = false, theme = "dark" 
       onChange={onChange}
       extensions={extensions}
       readOnly={readOnly}
-      theme={theme}
+      theme={theme === "dark" ? anvilTheme : anvilThemeLight}
       basicSetup={{
         lineNumbers: false, // We add lineNumbers() manually above
         foldGutter: true,
