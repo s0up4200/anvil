@@ -92,11 +92,12 @@ Only agents that are actually installed on your machine appear in the sidebar. C
 
 ## Marketplace
 
-Anvil shells out to [`npx skills`](https://skills.sh) for marketplace operations.
+Anvil shells out to [`npx skills`](https://skills.sh) for marketplace operations and marketplace-managed removals.
 
 - **Search** — finds skills from the skills.sh registry
 - **Install** — downloads to `~/.agents/skills/` vault, symlinks to all detected agents
 - **Update** — compares local hashes against remote, pulls latest versions
+- **Remove** — uninstalls marketplace-managed skills globally or from a specific agent
 
 > [!NOTE]
 > Marketplace features require Node.js. If the CLI isn't available, Anvil shows a setup banner in the marketplace view.
