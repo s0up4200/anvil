@@ -55,6 +55,12 @@ bun run tauri dev
 bun run tauri build
 ```
 
+### Platform support
+
+Anvil is supported and tested on macOS only.
+
+Linux and Windows builds may be published in GitHub Releases, but they are currently untested and unsupported.
+
 ### Unsigned macOS release
 
 If macOS blocks the app after you move it to `/Applications`, clear the quarantine flag:
