@@ -98,82 +98,87 @@ export function UpdateCenter() {
       </div>
 
       {/* Content */}
-      <ScrollArea className="min-h-0 flex-1">
-        <div className="flex flex-col gap-3 p-4">
-          {error && (
-            <div className="flex items-center gap-2">
-              <p className="text-xs text-destructive">{error}</p>
-              <Button variant="outline" size="xs" onClick={() => { setError(null); void checkNow() }}>
-                Retry
-              </Button>
-            </div>
-          )}
-
-          {pendingUpdates.length === 0 && !isChecking && (
-            <div className="flex flex-col gap-2 p-6">
-              <p className="text-sm text-muted-foreground">
-                All skills are up to date
-              </p>
-            </div>
-          )}
-
-          {isChecking && pendingUpdates.length === 0 && (
-            <p className="text-sm text-muted-foreground animate-pulse">
-              Checking for updates…
-            </p>
-          )}
-
-          {pendingUpdates.map((update) => {
-            const isUpdating = updatingSkills.includes(update.skillName)
-            return (
-              <div
-                key={update.skillName}
-                className="flex items-center justify-between rounded-lg border border-border bg-card px-4 py-3"
-              >
-                <div className="min-w-0">
-                  <p className="text-sm font-medium text-foreground">
-                    {update.skillName}
-                  </p>
-                  {update.sourceRepo && (
-                    <p className="text-xs text-muted-foreground">
-                      {update.sourceRepo}
-                    </p>
-                  )}
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => void handleViewDiff(update.skillName)}
-                    disabled={loadingDiff === update.skillName}
-                  >
-                    {loadingDiff === update.skillName ? "Loading…" : "Diff"}
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={() => void handleUpdateOne(update.skillName)}
-                    disabled={isUpdating || isUpdatingAll}
-                  >
-                    {isUpdating ? "Updating…" : "Update"}
-                  </Button>
-                </div>
+      {activeDiff ? (
+        <SkillDiffView
+          diff={activeDiff}
+          onClose={() => setActiveDiff(null)}
+        />
+      ) : (
+        <ScrollArea className="min-h-0 flex-1">
+          <div className="flex flex-col gap-3 p-4">
+            {error && (
+              <div className="flex items-center gap-2">
+                <p className="text-xs text-destructive">{error}</p>
+                <Button variant="outline" size="xs" onClick={() => { setError(null); void checkNow() }}>
+                  Retry
+                </Button>
               </div>
-            )
-          })}
+            )}
 
-          <ProgressLog
-            eventName="marketplace-update-progress"
-            isRunning={anyUpdating}
-          />
+            {pendingUpdates.length === 0 && !isChecking && (
+              <div className="flex flex-col gap-2 p-6">
+                <p className="text-sm text-muted-foreground">
+                  All skills are up to date
+                </p>
+              </div>
+            )}
 
-          {activeDiff && (
-            <SkillDiffView
-              diff={activeDiff}
-              onClose={() => setActiveDiff(null)}
+            {isChecking && pendingUpdates.length === 0 && (
+              <p className="text-sm text-muted-foreground animate-pulse">
+                Checking for updates…
+              </p>
+            )}
+
+            {pendingUpdates.map((update) => {
+              const isUpdating = updatingSkills.includes(update.skillName)
+              return (
+                <div
+                  key={update.skillName}
+                  className="flex items-center justify-between rounded-lg border border-border bg-card px-4 py-3"
+                >
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-foreground">
+                      {update.skillName}
+                    </p>
+                    {update.sourceRepo && (
+                      <p className="text-xs text-muted-foreground">
+                        {update.sourceRepo}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => void handleViewDiff(update.skillName)}
+                      disabled={loadingDiff === update.skillName}
+                    >
+                      {loadingDiff === update.skillName ? "Loading…" : "Diff"}
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() => void handleUpdateOne(update.skillName)}
+                      disabled={isUpdating || isUpdatingAll}
+                    >
+                      {isUpdating ? "Updating…" : "Update"}
+                    </Button>
+                  </div>
+                </div>
+              )
+            })}
+
+            {anyUpdating && updatingSkills.length > 0 && (
+              <p className="text-xs text-muted-foreground">
+                Fetching latest version of {updatingSkills.length === 1 ? updatingSkills[0] : `${updatingSkills.length} skills`}…
+              </p>
+            )}
+            <ProgressLog
+              eventName="marketplace-update-progress"
+              isRunning={anyUpdating}
             />
-          )}
-        </div>
-      </ScrollArea>
+          </div>
+        </ScrollArea>
+      )}
     </div>
   )
 }
