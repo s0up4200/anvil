@@ -2,7 +2,7 @@
 <html lang="en" class="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Anvil.One app for all your AI skills</title>
   <meta name="description" content="Create, manage, and sync skills across 40+ coding agents. Keyboard-first desktop app for macOS.">
   <meta property="og:title" content="Anvil.One app for all your AI skills">
@@ -109,7 +109,7 @@
     .container {
       max-width: var(--container);
       margin: 0 auto;
-      padding: 0 24px;
+      padding: 0 max(24px, env(safe-area-inset-right)) 0 max(24px, env(safe-area-inset-left));
     }
 
     /* ============================================================
@@ -130,7 +130,7 @@
     .nav-inner {
       max-width: var(--container);
       margin: 0 auto;
-      padding: 0 24px;
+      padding: 0 max(24px, env(safe-area-inset-right)) 0 max(24px, env(safe-area-inset-left));
       height: 100%;
       display: flex;
       align-items: center;
@@ -164,6 +164,9 @@
       font-weight: 500;
       color: var(--muted);
       transition: color 0.15s ease;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
     }
 
     .nav-links a:hover { color: var(--fg); }
@@ -175,6 +178,8 @@
       cursor: pointer;
       color: var(--muted);
       padding: 6px;
+      min-width: 44px;
+      min-height: 44px;
       border-radius: var(--radius);
       transition: color 0.15s ease, background-color 0.15s ease;
       display: flex;
@@ -243,6 +248,7 @@
       display: inline-block;
       max-width: min(100%, 30rem);
       overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
       padding: 0;
       border: none;
       border-radius: 0;
@@ -255,6 +261,7 @@
       letter-spacing: -0.01em;
       opacity: 0.86;
       box-shadow: none;
+      overscroll-behavior-x: contain;
     }
 
     /* ============================================================
@@ -347,13 +354,14 @@
     footer {
       border-top: 1px solid var(--border);
       padding: 24px 0;
+      padding-bottom: max(24px, env(safe-area-inset-bottom));
       transition: border-color 0.3s ease;
     }
 
     .footer-inner {
       max-width: var(--container);
       margin: 0 auto;
-      padding: 0 24px;
+      padding: 0 max(24px, env(safe-area-inset-right)) 0 max(24px, env(safe-area-inset-left));
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -376,6 +384,14 @@
     .footer-inner a svg { display: block; }
 
     .footer-inner a:hover { color: var(--fg); }
+    .footer-inner a {
+      min-width: 44px;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
     .footer-inner a svg { width: 20px; height: 20px; fill: currentColor; }
 
     /* ============================================================
@@ -576,6 +592,13 @@
 
       .agents-section { padding-top: 56px; }
       .bottom-cta { padding: 56px 0; }
+
+      .footer-inner {
+        flex-wrap: wrap;
+        gap: 12px;
+        justify-content: center;
+        text-align: center;
+      }
     }
 
     /* ============================================================
