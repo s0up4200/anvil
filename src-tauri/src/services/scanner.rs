@@ -265,7 +265,11 @@ fn derive_name(file_path: &Path) -> String {
 fn sha256_hex(data: &[u8]) -> String {
     let mut hasher = Sha256::new();
     hasher.update(data);
-    format!("{:x}", hasher.finalize())
+    hasher
+        .finalize()
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect()
 }
 
 // ---------------------------------------------------------------------------
@@ -352,6 +356,14 @@ mod tests {
         let result = scan_directory(non_existent, "test-agent", SkillScope::Global);
         assert!(result.is_ok());
         assert!(result.unwrap().is_empty());
+    }
+
+    #[test]
+    fn sha256_hex_encodes_digest() {
+        assert_eq!(
+            sha256_hex(b"abc"),
+            "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
+        );
     }
 
     // Extra: scan_all deduplicates skills shared across agents
