@@ -41,7 +41,7 @@ jobs:
         with:
           tagName: ${{ github.ref_name }}
           releaseName: Anvil ${{ github.ref_name }}
-          releaseBody: See the assets to download this version and install.
           releaseDraft: true
           prerelease: false
+          generateReleaseNotes: true
           args: ${{ matrix.args }}
