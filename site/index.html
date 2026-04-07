@@ -247,10 +247,13 @@
       border-radius: var(--radius-pill);
       border: none;
       cursor: pointer;
-      transition: transform 0.08s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, background-color 0.2s ease;
       text-decoration: none;
     }
 
+    @media (hover: hover) {
+      .btn:hover { transform: translateY(-2px); }
+    }
     .btn:active { transform: scale(0.97); }
 
     .btn-primary {
@@ -338,14 +341,15 @@
     }
 
     .footer-tech {
-      opacity: 0.5;
+      opacity: 0.75;
     }
 
     .footer-inner a {
       color: var(--muted);
       transition: color 0.15s ease;
-      display: flex;
     }
+
+    .footer-inner a svg { display: block; }
 
     .footer-inner a:hover { color: var(--fg); }
     .footer-inner a svg { width: 20px; height: 20px; fill: currentColor; }
@@ -354,8 +358,9 @@
        LOAD ANIMATION
        ============================================================ */
     @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(16px); }
-      to { opacity: 1; transform: translateY(0); }
+      0% { opacity: 0; transform: translateY(28px) scale(0.98); }
+      65% { opacity: 1; transform: translateY(-2px) scale(1.002); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
     }
 
     .hero h1,
@@ -363,7 +368,7 @@
     .hero-actions,
     .platform-note,
     .screenshot-section {
-      animation: fadeUp 0.5s ease both;
+      animation: fadeUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
     }
 
     .hero h1 { animation-delay: 0.05s; }
@@ -371,6 +376,138 @@
     .hero-actions { animation-delay: 0.19s; }
     .platform-note { animation-delay: 0.24s; }
     .screenshot-section { animation-delay: 0.32s; }
+
+    /* ============================================================
+       SCROLL-DRIVEN REVEAL
+       ============================================================ */
+    @supports (animation-timeline: view()) {
+      .screenshot-section {
+        animation: screenshotScroll linear both;
+        animation-timeline: view();
+        animation-range: entry 0% entry 70%;
+      }
+
+      @keyframes screenshotScroll {
+        from {
+          opacity: 0;
+          transform: scale(0.93) translateY(40px);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1) translateY(0);
+        }
+      }
+    }
+
+    /* ============================================================
+       VIEW TRANSITIONS (theme toggle)
+       ============================================================ */
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+      animation-duration: 0.3s;
+    }
+
+    /* ============================================================
+       FEATURES
+       ============================================================ */
+    .features {
+      padding: 96px 0 0;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 40px 48px;
+    }
+
+    .features-grid .feature-card {
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+                  transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .features-grid.is-visible .feature-card {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .features-grid.is-visible .feature-card:nth-child(2) { transition-delay: 0.06s; }
+    .features-grid.is-visible .feature-card:nth-child(3) { transition-delay: 0.12s; }
+    .features-grid.is-visible .feature-card:nth-child(4) { transition-delay: 0.18s; }
+
+    .feature-card h3 {
+      font-family: var(--font-heading);
+      font-weight: 600;
+      font-size: 17px;
+      letter-spacing: -0.015em;
+      margin-bottom: 6px;
+    }
+
+    .feature-card p {
+      font-size: 15px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    /* ============================================================
+       AGENTS
+       ============================================================ */
+    .agents-section {
+      padding: 72px 0 0;
+    }
+
+    .agents-heading {
+      font-family: var(--font-heading);
+      font-weight: 600;
+      font-size: 17px;
+      letter-spacing: -0.015em;
+      margin-bottom: 16px;
+    }
+
+    .agent-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .agent-pills span {
+      font-size: 12.5px;
+      color: var(--muted);
+      padding: 4px 11px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-pill);
+      white-space: nowrap;
+    }
+
+    /* ============================================================
+       BOTTOM CTA
+       ============================================================ */
+    .bottom-cta {
+      padding: 80px 0;
+      text-align: center;
+    }
+
+    .bottom-cta p {
+      font-size: 15px;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+
+    /* ============================================================
+       SCROLL ENTRANCE
+       ============================================================ */
+    .animate-on-scroll {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+                  transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .animate-on-scroll.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
 
     /* ============================================================
        RESPONSIVE
@@ -395,6 +532,15 @@
 
       .screenshot-section { padding-top: 48px; }
       .container { padding: 0 18px; }
+
+      .features { padding-top: 64px; }
+      .features-grid {
+        grid-template-columns: 1fr;
+        gap: 32px;
+      }
+
+      .agents-section { padding-top: 56px; }
+      .bottom-cta { padding: 56px 0; }
     }
 
     /* ============================================================
@@ -403,9 +549,16 @@
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
         animation-duration: 0.01ms !important;
+        animation-delay: 0.01ms !important;
         transition-duration: 0.01ms !important;
       }
       html { scroll-behavior: auto; }
+      .animate-on-scroll,
+      .features-grid .feature-card {
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
+      }
     }
   </style>
 </head>
@@ -461,11 +614,94 @@
       </div>
     </section>
 
+    <section class="features container">
+      <div class="features-grid">
+        <div class="feature-card">
+          <h3>Every agent, one sidebar</h3>
+          <p>Auto-detects 43 agents on your system. Colored dots show which skills are installed where. Install to one agent or all of them.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Marketplace built in</h3>
+          <p>Search the skills.sh registry. View install counts, security audits, and full diffs before updating. One-click install to your vault.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Keyboard-first</h3>
+          <p>Cmd+K command palette. Shortcuts for every action. Arrow keys to navigate, Enter to open, Escape to close. No mouse needed.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Live editor, live sync</h3>
+          <p>CodeMirror with markdown highlighting and frontmatter forms. File watcher picks up external edits instantly. Atomic writes prevent corruption.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="agents-section container animate-on-scroll">
+      <h2 class="agents-heading">Works with 43 agents</h2>
+      <div class="agent-pills">
+        <span>GitHub Copilot</span>
+        <span>Cursor</span>
+        <span>Claude Code</span>
+        <span>Gemini CLI</span>
+        <span>OpenCode</span>
+        <span>Codex</span>
+        <span>OpenHands</span>
+        <span>Cline</span>
+        <span>OpenClaw</span>
+        <span>Pi</span>
+        <span>Continue</span>
+        <span>Goose</span>
+        <span>Warp</span>
+        <span>Roo Code</span>
+        <span>Crush</span>
+        <span>Qwen Code</span>
+        <span>Deep Agents</span>
+        <span>Kilo Code</span>
+        <span>Trae</span>
+        <span>Windsurf</span>
+        <span>Kimi Code</span>
+        <span>Junie</span>
+        <span>Augment</span>
+        <span>Mistral Vibe</span>
+        <span>Kiro CLI</span>
+        <span>Antigravity</span>
+        <span>Amp</span>
+        <span>Mux</span>
+        <span>Neovate</span>
+        <span>IBM Bob</span>
+        <span>Droid</span>
+        <span>Firebender</span>
+        <span>Zencoder</span>
+        <span>Qoder</span>
+        <span>CodeBuddy</span>
+        <span>Cortex Code</span>
+        <span>Pochi</span>
+        <span>iFlow CLI</span>
+        <span>AdaL</span>
+        <span>Command Code</span>
+        <span>MCPJam</span>
+        <span>Kode</span>
+        <span>+ yours</span>
+      </div>
+    </section>
+
+    <section class="bottom-cta container animate-on-scroll">
+      <p>Open source and free forever.</p>
+      <div class="hero-actions">
+        <a href="https://github.com/s0up4200/anvil/releases" class="btn btn-primary">
+          <svg viewBox="0 0 24 24"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+          Download for macOS
+        </a>
+        <a href="https://github.com/s0up4200/anvil" class="btn btn-secondary" target="_blank" rel="noopener">
+          View on GitHub
+        </a>
+      </div>
+    </section>
+
   </main>
 
   <footer>
     <div class="footer-inner">
-      <div class="footer-left">Built with Tauri, Rust &amp; React <span class="footer-tech">by soup</span></div>
+      <div class="footer-left">Built with Tauri, Rust &amp; React <span class="footer-tech">by <a href="https://bowlofsoup.dev" target="_blank" rel="noopener" class="inline-link">soup</a></span></div>
       <a href="https://github.com/s0up4200/anvil" target="_blank" rel="noopener" aria-label="GitHub">
         <svg viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/></svg>
       </a>
@@ -476,6 +712,7 @@
     (function () {
       var STORAGE_KEY = 'anvil-theme';
       var html = document.documentElement;
+      var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
       function getSystemTheme() {
         return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
@@ -494,11 +731,42 @@
         }
       });
 
-      document.querySelector('.theme-toggle').addEventListener('click', function () {
+      /* ── Theme toggle with crossfade View Transition ── */
+      var toggle = document.querySelector('.theme-toggle');
+      toggle.addEventListener('click', function () {
         var next = html.classList.contains('dark') ? 'light' : 'dark';
-        localStorage.setItem(STORAGE_KEY, next);
-        applyTheme(next);
+
+        if (!document.startViewTransition || reduceMotion.matches) {
+          localStorage.setItem(STORAGE_KEY, next);
+          applyTheme(next);
+          return;
+        }
+
+        document.startViewTransition(function () {
+          localStorage.setItem(STORAGE_KEY, next);
+          applyTheme(next);
+        });
       });
+
+      /* ── Scroll entrance animations ── */
+      var scrollObserver = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            scrollObserver.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.15 });
+
+      if (!reduceMotion.matches) {
+        document.querySelectorAll('.features-grid, .animate-on-scroll').forEach(function (el) {
+          scrollObserver.observe(el);
+        });
+      } else {
+        document.querySelectorAll('.features-grid, .animate-on-scroll').forEach(function (el) {
+          el.classList.add('is-visible');
+        });
+      }
     })();
   </script>
 </body>
