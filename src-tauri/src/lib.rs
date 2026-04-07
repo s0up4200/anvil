@@ -28,6 +28,7 @@ pub fn run() {
             commands::marketplace::check_skill_updates,
             commands::marketplace::update_marketplace_skill,
             commands::marketplace::update_all_skills,
+            commands::marketplace::remove_marketplace_skill,
             commands::marketplace::read_skill_lockfile,
             commands::marketplace::diff_remote_skill,
             commands::marketplace::fetch_marketplace_skill_content,

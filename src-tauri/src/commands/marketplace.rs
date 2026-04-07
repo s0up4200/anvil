@@ -74,6 +74,19 @@ pub async fn update_all_skills(app: AppHandle) -> Result<(), AppError> {
 }
 
 #[tauri::command]
+pub async fn remove_marketplace_skill(
+    skill_name: String,
+    agent_id: Option<String>,
+    app: AppHandle,
+) -> Result<(), AppError> {
+    tokio::task::spawn_blocking(move || {
+        skills_cli::run_remove(&skill_name, agent_id.as_deref(), &app)
+    })
+    .await
+    .map_err(|e| AppError::CliError(format!("Remove task failed: {e}")))?
+}
+
+#[tauri::command]
 pub fn read_skill_lockfile() -> Result<Vec<(String, LockfileEntry)>, AppError> {
     let lock = lockfile::read_lockfile()?;
     Ok(lock.skills.into_iter().collect())

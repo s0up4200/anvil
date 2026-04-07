@@ -15,6 +15,7 @@ import { useUpdateChecker } from "@/hooks/useUpdateChecker"
 import { useUIStore, type Theme } from "@/stores/uiStore"
 import { getConfig } from "@/lib/tauri"
 import { resolveTheme } from "@/lib/utils"
+import { openUrl } from "@tauri-apps/plugin-opener"
 
 export default function App() {
   const { theme, setTheme, activeView, createDialogOpen, setCreateDialogOpen } = useUIStore()
@@ -30,6 +31,21 @@ export default function App() {
   useFileWatcher(refetch)
   useKeyboard()
   useUpdateChecker()
+
+  // Open external links in the OS browser instead of inside the webview
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      const anchor = (e.target as HTMLElement).closest<HTMLAnchorElement>("a[href]")
+      if (!anchor) return
+      const url = anchor.href
+      if (url.startsWith("http://") || url.startsWith("https://")) {
+        e.preventDefault()
+        openUrl(url)
+      }
+    }
+    document.addEventListener("click", handleClick)
+    return () => document.removeEventListener("click", handleClick)
+  }, [])
 
   // Disable default browser context menu unless inside a Radix ContextMenuTrigger
   useEffect(() => {

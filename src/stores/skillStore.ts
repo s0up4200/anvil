@@ -5,6 +5,8 @@ interface SkillState {
   skills: Skill[];
   selectedSkillId: string | null;
   searchQuery: string;
+  /** Set by keyboard shortcut to request the delete dialog for a skill. */
+  pendingDeleteId: string | null;
 }
 
 interface SkillActions {
@@ -15,6 +17,7 @@ interface SkillActions {
   removeSkill: (id: string) => void;
   /** Replace a single skill in the store in-place (optimistic update). */
   updateSkillInPlace: (updated: Skill) => void;
+  setPendingDeleteId: (id: string | null) => void;
 }
 
 export const useSkillStore = create<SkillState & SkillActions>()((set) => ({
@@ -22,6 +25,7 @@ export const useSkillStore = create<SkillState & SkillActions>()((set) => ({
   skills: [],
   selectedSkillId: null,
   searchQuery: "",
+  pendingDeleteId: null,
 
   // Actions
   setSkills: (skills) => set({ skills }),
@@ -38,4 +42,5 @@ export const useSkillStore = create<SkillState & SkillActions>()((set) => ({
     set((state) => ({
       skills: state.skills.map((s) => (s.id === updated.id ? updated : s)),
     })),
+  setPendingDeleteId: (id) => set({ pendingDeleteId: id }),
 }));

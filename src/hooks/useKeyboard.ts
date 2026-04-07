@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useUIStore } from "@/stores/uiStore";
 import { useSkillStore } from "@/stores/skillStore";
-import { deleteSkill, duplicateSkill } from "@/lib/tauri";
+import { duplicateSkill } from "@/lib/tauri";
 
 /**
  * Registers global keyboard shortcuts:
@@ -11,7 +11,7 @@ import { deleteSkill, duplicateSkill } from "@/lib/tauri";
  */
 export function useKeyboard(): void {
   const { setCommandPaletteOpen, setSettingsOpen, setCreateDialogOpen } = useUIStore();
-  const { skills, selectedSkillId, setSelectedSkillId, removeSkill } = useSkillStore();
+  const { skills, selectedSkillId, setSelectedSkillId, setPendingDeleteId } = useSkillStore();
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent): void {
@@ -64,11 +64,7 @@ export function useKeyboard(): void {
         )
           return;
         if (!selectedSkillId) return;
-        const skill = skills.find((s) => s.id === selectedSkillId);
-        if (skill) {
-          deleteSkill(skill.path);
-          removeSkill(skill.id);
-        }
+        setPendingDeleteId(selectedSkillId);
         return;
       }
 
@@ -131,6 +127,6 @@ export function useKeyboard(): void {
     skills,
     selectedSkillId,
     setSelectedSkillId,
-    removeSkill,
+    setPendingDeleteId,
   ]);
 }

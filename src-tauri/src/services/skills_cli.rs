@@ -178,41 +178,48 @@ fn extract_url(line: &str) -> Option<String> {
     Some(line[start..].trim().to_string())
 }
 
-/// Run `npx skills add <package> -g -y` and stream stdout as events.
-/// Installs globally to the vault (~/.agents/skills/) and auto-symlinks to all agents.
-pub fn run_install(package: &str, app: &AppHandle) -> Result<(), AppError> {
+/// Spawn `npx skills <args>`, stream stdout lines as Tauri events, and wait
+/// for exit.  Shared by install / update / remove.
+fn spawn_and_stream(args: &[&str], event: &str, app: &AppHandle) -> Result<(), AppError> {
     let npx = resolve_npx()?;
 
-    let mut cmd = Command::new(&npx);
-    cmd.args(["skills", "add", package, "-g", "-y"])
+    let mut child = Command::new(&npx)
+        .args(args)
         .stdin(Stdio::null())
         .stdout(Stdio::piped())
-        .stderr(Stdio::piped());
-
-    let mut child = cmd
+        .stderr(Stdio::piped())
         .spawn()
-        .map_err(|e| AppError::CliError(format!("Failed to spawn install: {e}")))?;
+        .map_err(|e| AppError::CliError(format!("Failed to spawn `npx {}`: {e}", args.join(" "))))?;
 
-    // Stream stdout
     if let Some(stdout) = child.stdout.take() {
         let reader = BufReader::new(stdout);
         for line in reader.lines() {
             if let Ok(line) = line {
                 let clean = strip_ansi(&line);
-                let _ = app.emit("marketplace-install-progress", &clean);
+                let _ = app.emit(event, &clean);
             }
         }
     }
 
     let status = child
         .wait()
-        .map_err(|e| AppError::CliError(format!("Install process error: {e}")))?;
+        .map_err(|e| AppError::CliError(format!("`npx {}` process error: {e}", args.join(" "))))?;
 
     if !status.success() {
-        return Err(AppError::CliError("Install command failed".into()));
+        return Err(AppError::CliError(format!("`npx {}` failed", args.join(" "))));
     }
 
     Ok(())
+}
+
+/// Run `npx skills add <package> -g -y` and stream stdout as events.
+/// Installs globally to the vault (~/.agents/skills/) and auto-symlinks to all agents.
+pub fn run_install(package: &str, app: &AppHandle) -> Result<(), AppError> {
+    spawn_and_stream(
+        &["skills", "add", package, "-g", "-y"],
+        "marketplace-install-progress",
+        app,
+    )
 }
 
 /// Run `npx skills check` and return the raw (ANSI-stripped) output.
@@ -232,43 +239,33 @@ pub fn run_check() -> Result<String, AppError> {
 
 /// Run `npx skills update --yes` (optionally targeted) and stream progress events.
 pub fn run_update(skill_name: Option<&str>, app: &AppHandle) -> Result<(), AppError> {
-    let npx = resolve_npx()?;
-
     let mut args = vec!["skills", "update", "--yes"];
     let skill_flag;
     if let Some(name) = skill_name {
-        skill_flag = format!("{}", name);
+        skill_flag = name.to_string();
         args.push("--skill");
         args.push(&skill_flag);
     }
 
-    let mut child = Command::new(&npx)
-        .args(&args)
-        .stdin(Stdio::null())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
-        .map_err(|e| AppError::CliError(format!("Failed to spawn update: {e}")))?;
+    spawn_and_stream(&args, "marketplace-update-progress", app)
+}
 
-    if let Some(stdout) = child.stdout.take() {
-        let reader = BufReader::new(stdout);
-        for line in reader.lines() {
-            if let Ok(line) = line {
-                let clean = strip_ansi(&line);
-                let _ = app.emit("marketplace-update-progress", &clean);
-            }
-        }
+/// Run `npx skills remove <name> [-g] [--agent <id>] -y` and stream progress events.
+///
+/// When `agent_id` is `Some`, removes from that specific agent only.
+/// When `agent_id` is `None`, removes globally (vault + all agents + lockfile entry).
+pub fn run_remove(skill_name: &str, agent_id: Option<&str>, app: &AppHandle) -> Result<(), AppError> {
+    let mut args = vec!["skills", "remove", skill_name, "-y"];
+    let agent_flag;
+    if let Some(id) = agent_id {
+        agent_flag = id.to_string();
+        args.push("--agent");
+        args.push(&agent_flag);
+    } else {
+        args.push("-g");
     }
 
-    let status = child
-        .wait()
-        .map_err(|e| AppError::CliError(format!("Update process error: {e}")))?;
-
-    if !status.success() {
-        return Err(AppError::CliError("Update command failed".into()));
-    }
-
-    Ok(())
+    spawn_and_stream(&args, "marketplace-remove-progress", app)
 }
 
 #[cfg(test)]

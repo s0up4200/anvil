@@ -148,6 +148,18 @@ export function updateAllSkills(): Promise<void> {
   return invoke<void>("update_all_skills");
 }
 
+/**
+ * Remove a marketplace skill via `npx skills remove`.
+ * If agentId is provided, removes from that agent only.
+ * If omitted, removes globally (vault + all agents + lockfile).
+ */
+export function removeMarketplaceSkill(
+  skillName: string,
+  agentId?: string,
+): Promise<void> {
+  return invoke<void>("remove_marketplace_skill", { skillName, agentId });
+}
+
 /** Read the skill lockfile entries. */
 export function readSkillLockfile(): Promise<[string, LockfileEntry][]> {
   return invoke<[string, LockfileEntry][]>("read_skill_lockfile");

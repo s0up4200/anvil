@@ -6,6 +6,9 @@ use crate::models::agent::known_agents;
 use crate::models::skill::{Skill, SkillFrontmatter};
 use crate::services::{fs as svc_fs, parser, scanner, symlink};
 
+#[cfg(target_os = "macos")]
+use trash::macos::{DeleteMethod, TrashContextExtMacos};
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -141,7 +144,10 @@ pub fn delete_skill(path: String) -> Result<(), AppError> {
     let p = Path::new(&path);
     let target = skill_dir(p);
 
-    trash::delete(&target).map_err(|e| AppError::Io(e.to_string()))
+    let mut ctx = trash::TrashContext::new();
+    #[cfg(target_os = "macos")]
+    ctx.set_delete_method(DeleteMethod::NsFileManager);
+    ctx.delete(&target).map_err(|e| AppError::Io(e.to_string()))
 }
 
 /// Duplicate a skill into a sibling directory with a `-copy` suffix.

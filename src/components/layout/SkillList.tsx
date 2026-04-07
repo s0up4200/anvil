@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { Search, X } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import {
@@ -16,9 +16,10 @@ import { SkillRow } from "@/components/layout/SkillRow"
 import { SkillGroup } from "@/components/layout/SkillGroup"
 import { groupSkills } from "@/lib/skill-grouping"
 import { useSkillStore } from "@/stores/skillStore"
+import { useAgentStore } from "@/stores/agentStore"
 import { useUpdateStore } from "@/stores/updateStore"
 import { useSkills } from "@/hooks/useSkills"
-import { deleteSkill, duplicateSkill, getConfig, toggleSkill } from "@/lib/tauri"
+import { deleteSkill, duplicateSkill, getConfig, removeMarketplaceSkill, toggleSkill } from "@/lib/tauri"
 import {
   TooltipProvider,
 } from "@/components/ui/tooltip"
@@ -26,8 +27,9 @@ import { cn } from "@/lib/utils"
 import type { Skill } from "@/types"
 
 export function SkillList() {
-  const { selectedSkillId, setSelectedSkillId, searchQuery, setSearchQuery, removeSkill, updateSkillInPlace } =
+  const { selectedSkillId, setSelectedSkillId, searchQuery, setSearchQuery, removeSkill, updateSkillInPlace, pendingDeleteId, setPendingDeleteId } =
     useSkillStore()
+  const { selectedAgentId, agents } = useAgentStore()
   const { pendingUpdates } = useUpdateStore()
   const { skills, isLoading, error, refetch } = useSkills()
 
@@ -35,6 +37,14 @@ export function SkillList() {
   const [installTarget, setInstallTarget] = useState<Skill | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<Skill | null>(null)
+
+  // React to keyboard-triggered delete requests
+  useEffect(() => {
+    if (!pendingDeleteId) return
+    const skill = skills.find((s) => s.id === pendingDeleteId)
+    setPendingDeleteId(null)
+    if (skill) handleDelete(skill)
+  }, [pendingDeleteId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Group skills when not searching
   const grouped = useMemo(
@@ -56,6 +66,24 @@ export function SkillList() {
       removeSkill(skill.id)
     } catch (err) {
       console.error("Failed to delete skill:", err)
+    }
+  }, [removeSkill])
+
+  const doRemoveFromAgent = useCallback(async (skill: Skill, agentId: string) => {
+    try {
+      await removeMarketplaceSkill(skill.name, agentId)
+      removeSkill(skill.id)
+    } catch (err) {
+      console.error("Failed to remove skill from agent:", err)
+    }
+  }, [removeSkill])
+
+  const doRemoveEverywhere = useCallback(async (skill: Skill) => {
+    try {
+      await removeMarketplaceSkill(skill.name)
+      removeSkill(skill.id)
+    } catch (err) {
+      console.error("Failed to remove skill:", err)
     }
   }, [removeSkill])
 
@@ -196,27 +224,99 @@ export function SkillList() {
         onInstalled={refetch}
       />
 
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete skill</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete &ldquo;{deleteTarget?.name}&rdquo;? This will move it to the trash.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+      <DeleteSkillDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        skill={deleteTarget}
+        selectedAgentId={selectedAgentId}
+        agentName={
+          selectedAgentId
+            ? agents.find((a) => a.id === selectedAgentId)?.name ?? selectedAgentId
+            : undefined
+        }
+        onDelete={doDelete}
+        onRemoveFromAgent={doRemoveFromAgent}
+        onRemoveEverywhere={doRemoveEverywhere}
+      />
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Delete confirmation dialog
+// ---------------------------------------------------------------------------
+
+interface DeleteSkillDialogProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  skill: Skill | null
+  selectedAgentId: string | null
+  agentName: string | undefined
+  onDelete: (skill: Skill) => void
+  onRemoveFromAgent: (skill: Skill, agentId: string) => void
+  onRemoveEverywhere: (skill: Skill) => void
+}
+
+function DeleteSkillDialog({
+  open,
+  onOpenChange,
+  skill,
+  selectedAgentId,
+  agentName,
+  onDelete,
+  onRemoveFromAgent,
+  onRemoveEverywhere,
+}: DeleteSkillDialogProps) {
+  const isMultiAgent = skill !== null && skill.agentIds.length > 1 && selectedAgentId !== null
+
+  return (
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete skill</AlertDialogTitle>
+          <AlertDialogDescription>
+            {isMultiAgent
+              ? <>
+                  &ldquo;{skill.name}&rdquo; is installed in {skill.agentIds.length} agents.
+                  Remove it from {agentName} only, or delete it everywhere?
+                </>
+              : <>Are you sure you want to delete &ldquo;{skill?.name}&rdquo;? This will move it to the trash.</>}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          {isMultiAgent ? (
+            <>
+              <AlertDialogAction
+                variant="outline"
+                onClick={() => {
+                  void onRemoveFromAgent(skill, selectedAgentId)
+                  onOpenChange(false)
+                }}
+              >
+                Remove from {agentName}
+              </AlertDialogAction>
+              <AlertDialogAction
+                onClick={() => {
+                  void onRemoveEverywhere(skill)
+                  onOpenChange(false)
+                }}
+              >
+                Delete everywhere
+              </AlertDialogAction>
+            </>
+          ) : (
             <AlertDialogAction
               onClick={() => {
-                if (deleteTarget) void doDelete(deleteTarget)
-                setDeleteDialogOpen(false)
+                if (skill) void onDelete(skill)
+                onOpenChange(false)
               }}
             >
               Delete
             </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
+          )}
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   )
 }
