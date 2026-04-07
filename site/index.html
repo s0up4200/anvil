@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anvil.One app for all your AI skills</title>
+  <meta name="description" content="Create, manage, and sync skills across 40+ coding agents. Keyboard-first desktop app for macOS.">
+  <meta property="og:title" content="Anvil.One app for all your AI skills">
+  <meta property="og:description" content="Create, manage, and sync skills across 40+ coding agents. Keyboard-first. No CLI required.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ============================================================
+       TOKENS.The Forge palette (OKLCH, matching the app exactly)
+       ============================================================ */
+    :root {
+      --font-heading: 'Space Grotesk', system-ui, sans-serif;
+      --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+
+      /* Light mode */
+      --bg: oklch(0.985 0.005 75);
+      --fg: oklch(0.175 0.025 55);
+      --card-bg: oklch(1 0.006 70);
+      --primary: oklch(0.52 0.16 52);
+      --primary-hover: oklch(0.48 0.16 52);
+      --primary-fg: oklch(0.99 0.005 70);
+      --muted: oklch(0.50 0.025 58);
+      --border: oklch(0.888 0.018 68);
+      --surface: oklch(0.942 0.012 68);
+      --nav-bg: oklch(0.985 0.005 75 / 85%);
+      --footer-bg: oklch(0.12 0.014 52);
+      --footer-fg: oklch(0.96 0.008 68);
+      --footer-muted: oklch(0.50 0.030 58);
+
+      --shadow-card:
+        0 1px 2px oklch(0.12 0.014 52 / 4%),
+        0 2px 4px oklch(0.12 0.014 52 / 5%),
+        0 4px 8px oklch(0.12 0.014 52 / 5%);
+      --shadow-card-hover:
+        0 2px 4px oklch(0.12 0.014 52 / 4%),
+        0 4px 8px oklch(0.12 0.014 52 / 5%),
+        0 8px 16px oklch(0.12 0.014 52 / 7%),
+        0 16px 32px oklch(0.12 0.014 52 / 5%);
+      --shadow-screenshot:
+        0 8px 16px oklch(0.12 0.014 52 / 4%),
+        0 16px 32px oklch(0.12 0.014 52 / 6%),
+        0 32px 64px oklch(0.12 0.014 52 / 8%),
+        0 48px 96px oklch(0.12 0.014 52 / 5%);
+
+      --radius: 6px;
+      --radius-lg: 10px;
+      --radius-pill: 999px;
+      --nav-height: 60px;
+      --container: 1060px;
+    }
+
+    html.dark {
+      --bg: oklch(0.12 0.014 52);
+      --fg: oklch(0.96 0.008 68);
+      --card-bg: oklch(0.163 0.018 52);
+      --primary: oklch(0.76 0.175 52);
+      --primary-hover: oklch(0.80 0.175 52);
+      --primary-fg: oklch(0.12 0.014 52);
+      --muted: oklch(0.55 0.025 58);
+      --border: oklch(0.26 0.018 52);
+      --surface: oklch(0.19 0.016 52);
+      --nav-bg: oklch(0.12 0.014 52 / 85%);
+      --footer-bg: oklch(0.08 0.010 52);
+      --footer-fg: oklch(0.96 0.008 68);
+      --footer-muted: oklch(0.45 0.020 58);
+
+      --shadow-card:
+        0 0 0 1px oklch(0.76 0.175 52 / 6%);
+      --shadow-card-hover:
+        0 0 0 1px oklch(0.76 0.175 52 / 12%),
+        0 8px 24px oklch(0 0 0 / 20%);
+      --shadow-screenshot:
+        0 0 0 1px oklch(0.76 0.175 52 / 10%),
+        0 16px 48px oklch(0 0 0 / 30%),
+        0 32px 80px oklch(0 0 0 / 20%);
+    }
+
+    /* ============================================================
+       BASE
+       ============================================================ */
+    html {
+      scroll-behavior: smooth;
+      height: 100%;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--fg);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    img { display: block; max-width: 100%; }
+
+    .container {
+      max-width: var(--container);
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ============================================================
+       NAV
+       ============================================================ */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      height: var(--nav-height);
+      background: var(--nav-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      transition: background-color 0.3s ease, border-color 0.3s ease;
+    }
+
+    .nav-inner {
+      max-width: var(--container);
+      margin: 0 auto;
+      padding: 0 24px;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 20px;
+      letter-spacing: -0.03em;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+    }
+
+    .nav-links a {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--muted);
+      transition: color 0.15s ease;
+    }
+
+    .nav-links a:hover { color: var(--fg); }
+
+    .theme-toggle {
+      appearance: none;
+      border: none;
+      background: none;
+      cursor: pointer;
+      color: var(--muted);
+      padding: 6px;
+      border-radius: var(--radius);
+      transition: color 0.15s ease, background-color 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .theme-toggle:hover {
+      color: var(--fg);
+      background: var(--surface);
+    }
+
+    .theme-toggle svg { width: 18px; height: 18px; }
+    .sun-icon { display: none; }
+    html.dark .sun-icon { display: block; }
+    html.dark .moon-icon { display: none; }
+
+    /* ============================================================
+       HERO
+       ============================================================ */
+    .hero {
+      padding-top: calc(var(--nav-height) + 80px);
+      text-align: center;
+    }
+
+    .hero h1 {
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: clamp(36px, 5vw, 56px);
+      line-height: 1.1;
+      letter-spacing: -0.035em;
+      max-width: 680px;
+      margin: 0 auto 20px;
+    }
+
+    .hero-sub {
+      font-size: clamp(16px, 2vw, 19px);
+      color: var(--muted);
+      max-width: 540px;
+      margin: 0 auto 36px;
+      line-height: 1.55;
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .platform-note {
+      font-size: 13px;
+      color: var(--muted);
+      opacity: 0.8;
+    }
+
+    /* ============================================================
+       BUTTONS
+       ============================================================ */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-body);
+      font-size: 15px;
+      font-weight: 600;
+      padding: 11px 24px;
+      border-radius: var(--radius-pill);
+      border: none;
+      cursor: pointer;
+      transition: transform 0.08s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+      text-decoration: none;
+    }
+
+    .btn:active { transform: scale(0.97); }
+
+    .btn-primary {
+      background: var(--fg);
+      color: var(--bg);
+    }
+
+    .btn-primary:hover {
+      opacity: 0.88;
+    }
+
+    .btn-primary svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--fg);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: var(--surface);
+      border-color: oklch(0.50 0.025 58);
+    }
+
+    /* ============================================================
+       SCREENSHOT
+       ============================================================ */
+    .screenshot-section {
+      padding: 64px 0 0;
+    }
+
+    .inline-link {
+      color: var(--primary);
+      text-decoration: underline;
+      text-decoration-color: var(--primary);
+      text-underline-offset: 2px;
+      transition: opacity 0.15s ease;
+    }
+
+    .inline-link:hover { opacity: 0.8; }
+
+    .screenshot-frame {
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    .screenshot-frame img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* Theme-aware screenshot swap */
+    .screenshot-frame .screenshot-light { display: block; }
+    .screenshot-frame .screenshot-dark { display: none; }
+    html.dark .screenshot-frame .screenshot-light { display: none; }
+    html.dark .screenshot-frame .screenshot-dark { display: block; }
+
+
+    /* ============================================================
+       FOOTER
+       ============================================================ */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 24px 0;
+      transition: border-color 0.3s ease;
+    }
+
+    .footer-inner {
+      max-width: var(--container);
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .footer-left {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .footer-tech {
+      opacity: 0.5;
+    }
+
+    .footer-inner a {
+      color: var(--muted);
+      transition: color 0.15s ease;
+      display: flex;
+    }
+
+    .footer-inner a:hover { color: var(--fg); }
+    .footer-inner a svg { width: 20px; height: 20px; fill: currentColor; }
+
+    /* ============================================================
+       LOAD ANIMATION
+       ============================================================ */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero h1,
+    .hero-sub,
+    .hero-actions,
+    .platform-note,
+    .screenshot-section {
+      animation: fadeUp 0.5s ease both;
+    }
+
+    .hero h1 { animation-delay: 0.05s; }
+    .hero-sub { animation-delay: 0.12s; }
+    .hero-actions { animation-delay: 0.19s; }
+    .platform-note { animation-delay: 0.24s; }
+    .screenshot-section { animation-delay: 0.32s; }
+
+    /* ============================================================
+       RESPONSIVE
+       ============================================================ */
+    @media (max-width: 768px) {
+      .hero { padding-top: calc(var(--nav-height) + 56px); }
+
+      .hero-actions {
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .hero-actions .btn {
+        width: 100%;
+        max-width: 280px;
+        justify-content: center;
+      }
+
+      .screenshot-frame {
+        margin: 0 -8px;
+      }
+
+      .screenshot-section { padding-top: 48px; }
+      .container { padding: 0 18px; }
+    }
+
+    /* ============================================================
+       REDUCED MOTION
+       ============================================================ */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+      html { scroll-behavior: auto; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="nav-inner">
+      <a class="logo" href="/">
+        <img src="logo.png" alt="" class="logo-icon" width="28" height="28">
+        Anvil
+      </a>
+      <div class="nav-links">
+        <a href="https://github.com/s0up4200/anvil" target="_blank" rel="noopener">GitHub</a>
+        <button class="theme-toggle" type="button" aria-label="Toggle dark mode">
+          <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+          <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/>
+            <line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/>
+            <line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <section class="hero container">
+      <h1>One app for all your AI skills</h1>
+      <p class="hero-sub">A desktop <a href="https://skills.sh" target="_blank" rel="noopener" class="inline-link">skills.sh</a> client. Search, install, and manage skills across Claude Code, Codex, and 40+ other agents.</p>
+      <div class="hero-actions">
+        <a href="https://github.com/s0up4200/anvil/releases" class="btn btn-primary">
+          <svg viewBox="0 0 24 24"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+          Download for macOS
+        </a>
+        <a href="https://github.com/s0up4200/anvil" class="btn btn-secondary" target="_blank" rel="noopener">
+          View on GitHub
+        </a>
+      </div>
+      <p class="platform-note">macOS 12+ &middot; Apple Silicon &amp; Intel</p>
+    </section>
+
+    <section class="screenshot-section">
+      <div class="screenshot-frame">
+        <img src="screenshot-dark.png" alt="Anvil skill management across 40+ agents" width="1380" height="862" class="screenshot-dark">
+        <img src="screenshot-light.png" alt="Anvil skill management across 40+ agents" width="1380" height="862" class="screenshot-light">
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-left">Built with Tauri, Rust &amp; React <span class="footer-tech">by soup</span></div>
+      <a href="https://github.com/s0up4200/anvil" target="_blank" rel="noopener" aria-label="GitHub">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/></svg>
+      </a>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      var STORAGE_KEY = 'anvil-theme';
+      var html = document.documentElement;
+
+      function getSystemTheme() {
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+
+      function applyTheme(theme) {
+        html.classList.toggle('dark', theme === 'dark');
+      }
+
+      var stored = localStorage.getItem(STORAGE_KEY);
+      applyTheme(stored || getSystemTheme());
+
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function (e) {
+        if (!localStorage.getItem(STORAGE_KEY)) {
+          applyTheme(e.matches ? 'dark' : 'light');
+        }
+      });
+
+      document.querySelector('.theme-toggle').addEventListener('click', function () {
+        var next = html.classList.contains('dark') ? 'light' : 'dark';
+        localStorage.setItem(STORAGE_KEY, next);
+        applyTheme(next);
+      });
+    })();
+  </script>
+</body>
+</html>
