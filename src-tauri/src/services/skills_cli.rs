@@ -4,7 +4,7 @@ use std::process::{Command, Stdio};
 use tauri::{AppHandle, Emitter};
 
 use crate::error::AppError;
-use crate::models::MarketplaceSkill;
+use crate::models::{Lockfile, MarketplaceSkill, SkillCheckResult, SkillUpdate, SkippedSkill};
 
 /// Resolve the full path to `npx` using the user's shell.
 /// Tauri apps on macOS inherit a minimal PATH, so we use `sh -c` to get
@@ -233,8 +233,119 @@ pub fn run_check() -> Result<String, AppError> {
         .output()
         .map_err(|e| AppError::CliError(format!("Failed to run skills check: {e}")))?;
 
-    let raw = String::from_utf8_lossy(&output.stdout);
-    Ok(strip_ansi(&raw))
+    let stdout = strip_ansi(&String::from_utf8_lossy(&output.stdout));
+    let stderr = strip_ansi(&String::from_utf8_lossy(&output.stderr));
+
+    if !output.status.success() {
+        let detail = stderr
+            .trim()
+            .split('\n')
+            .find(|line| !line.trim().is_empty())
+            .map(str::trim)
+            .filter(|line| !line.is_empty())
+            .or_else(|| {
+                stdout
+                    .trim()
+                    .split('\n')
+                    .find(|line| !line.trim().is_empty())
+                    .map(str::trim)
+            })
+            .unwrap_or("Unknown error");
+
+        return Err(AppError::CliError(format!(
+            "`npx skills check` failed: {detail}"
+        )));
+    }
+
+    Ok(stdout)
+}
+
+pub fn parse_check_output(output: &str, lockfile: &Lockfile) -> SkillCheckResult {
+    let mut updates = Vec::new();
+    let mut skipped_skills = Vec::new();
+    let mut active_skipped_skill: Option<usize> = None;
+
+    for line in output.lines() {
+        let trimmed = line.trim();
+
+        if trimmed.is_empty() {
+            continue;
+        }
+
+        if let Some(skill_name) = extract_outdated_skill(trimmed) {
+            let (source_repo, local_hash, installed_at) =
+                if let Some(entry) = lockfile.skills.get(&skill_name) {
+                    (
+                        entry.source.clone(),
+                        entry.skill_folder_hash.clone(),
+                        entry.installed_at.clone(),
+                    )
+                } else {
+                    (String::new(), String::new(), String::new())
+                };
+
+            updates.push(SkillUpdate {
+                skill_name,
+                local_hash,
+                source_repo,
+                installed_at,
+            });
+            active_skipped_skill = None;
+            continue;
+        }
+
+        if let Some(skill_name) = extract_skipped_skill_name(trimmed) {
+            skipped_skills.push(SkippedSkill {
+                skill_name,
+                source_repo: String::new(),
+            });
+            active_skipped_skill = Some(skipped_skills.len() - 1);
+            continue;
+        }
+
+        if let Some(source_repo) = extract_skipped_source(trimmed) {
+            if let Some(index) = active_skipped_skill {
+                skipped_skills[index].source_repo = source_repo;
+            }
+            continue;
+        }
+
+        active_skipped_skill = None;
+    }
+
+    SkillCheckResult {
+        updates,
+        skipped_skills,
+    }
+}
+
+fn extract_outdated_skill(line: &str) -> Option<String> {
+    if line.starts_with('↑') {
+        let name = line.trim_start_matches('↑').trim();
+        if !name.is_empty() {
+            return Some(name.to_string());
+        }
+    }
+
+    None
+}
+
+fn extract_skipped_skill_name(line: &str) -> Option<String> {
+    if line.starts_with('✗') {
+        let name = line.trim_start_matches('✗').trim();
+        if !name.is_empty() {
+            return Some(name.to_string());
+        }
+    }
+
+    None
+}
+
+fn extract_skipped_source(line: &str) -> Option<String> {
+    line.strip_prefix("source:")
+        .map(str::trim)
+        .filter(|source| !source.is_empty())
+        .map(ToString::to_string)
 }
 
 /// Run `npx skills update --yes` (optionally targeted) and stream progress events.
@@ -270,7 +381,10 @@ pub fn run_remove(skill_name: &str, agent_id: Option<&str>, app: &AppHandle) -> 
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashMap;
+
     use super::*;
+    use crate::models::{Lockfile, LockfileEntry};
 
     #[test]
     fn test_strip_ansi() {
@@ -329,5 +443,71 @@ resend/email-best-practices@email-best-practices 4.3K installs
         assert!(try_parse_skill_line("some random text").is_none());
         assert!(try_parse_skill_line("no-at-sign/here 100 installs").is_none());
         assert!(try_parse_skill_line("").is_none());
+    }
+
+    #[test]
+    fn test_parse_check_output_returns_updates_and_skipped_skills() {
+        let mut skills = HashMap::new();
+        skills.insert(
+            "resend".to_string(),
+            LockfileEntry {
+                source: "resend/resend-skills".to_string(),
+                source_type: String::new(),
+                source_url: String::new(),
+                skill_path: String::new(),
+                skill_folder_hash: "hash-123".to_string(),
+                installed_at: "2026-04-01T00:00:00Z".to_string(),
+                updated_at: String::new(),
+            },
+        );
+        let lockfile = Lockfile { version: 3, skills };
+
+        let output = r#"
+↑ resend
+
+✓ All skills are up to date
+
+Could not check 2 skill(s) (may need reinstall)
+
+  ✗ clerk
+    source: clerk/skills
+  ✗ emotional-awareness
+    source: s0up4200/skills
+"#;
+
+        let result = parse_check_output(output, &lockfile);
+
+        assert_eq!(result.updates.len(), 1);
+        assert_eq!(result.updates[0].skill_name, "resend");
+        assert_eq!(result.updates[0].source_repo, "resend/resend-skills");
+        assert_eq!(result.updates[0].local_hash, "hash-123");
+        assert_eq!(result.updates[0].installed_at, "2026-04-01T00:00:00Z");
+
+        assert_eq!(result.skipped_skills.len(), 2);
+        assert_eq!(result.skipped_skills[0].skill_name, "clerk");
+        assert_eq!(result.skipped_skills[0].source_repo, "clerk/skills");
+        assert_eq!(result.skipped_skills[1].skill_name, "emotional-awareness");
+        assert_eq!(result.skipped_skills[1].source_repo, "s0up4200/skills");
+    }
+
+    #[test]
+    fn test_parse_check_output_does_not_treat_partial_failures_as_clean_success() {
+        let output = r#"
+✓ All skills are up to date
+
+Could not check 1 skill(s) (may need reinstall)
+
+  ✗ clerk
+    source: clerk/skills
+"#;
+
+        let result = parse_check_output(output, &Lockfile {
+            version: 3,
+            skills: HashMap::new(),
+        });
+
+        assert!(result.updates.is_empty());
+        assert_eq!(result.skipped_skills.len(), 1);
+        assert_eq!(result.skipped_skills[0].skill_name, "clerk");
     }
 }

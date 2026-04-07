@@ -2,7 +2,7 @@ use base64::{engine::general_purpose::STANDARD, Engine as _};
 use tauri::AppHandle;
 
 use crate::error::AppError;
-use crate::models::{AgentInstalls, LeaderboardSkill, LockfileEntry, MarketplaceSkill, SkillAudit, SkillDiff, SkillMetadata, SkillUpdate};
+use crate::models::{AgentInstalls, LeaderboardSkill, LockfileEntry, MarketplaceSkill, SkillAudit, SkillCheckResult, SkillDiff, SkillMetadata};
 use crate::services::{lockfile, skills_cli};
 
 #[tauri::command]
@@ -23,34 +23,11 @@ pub async fn install_from_marketplace(
 }
 
 #[tauri::command]
-pub async fn check_skill_updates() -> Result<Vec<SkillUpdate>, AppError> {
+pub async fn check_skill_updates() -> Result<SkillCheckResult, AppError> {
     tokio::task::spawn_blocking(move || {
         let check_output = skills_cli::run_check()?;
-
-        if check_output.contains("All skills are up to date") {
-            return Ok(vec![]);
-        }
-
         let lock = lockfile::read_lockfile()?;
-        let mut updates = Vec::new();
-
-        for line in check_output.lines() {
-            let trimmed = line.trim();
-            if trimmed.starts_with('↑') {
-                let name = trimmed.trim_start_matches('↑').trim();
-                if !name.is_empty() {
-                    let entry = lock.skills.get(name);
-                    updates.push(SkillUpdate {
-                        skill_name: name.to_string(),
-                        local_hash: entry.map_or(String::new(), |e| e.skill_folder_hash.clone()),
-                        source_repo: entry.map_or(String::new(), |e| e.source.clone()),
-                        installed_at: entry.map_or(String::new(), |e| e.installed_at.clone()),
-                    });
-                }
-            }
-        }
-
-        Ok(updates)
+        Ok(skills_cli::parse_check_output(&check_output, &lock))
     })
     .await
     .map_err(|e| AppError::CliError(format!("Check task failed: {e}")))?

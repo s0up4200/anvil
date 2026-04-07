@@ -1,8 +1,9 @@
 import { create } from "zustand";
-import type { SkillUpdate } from "@/types";
+import type { SkippedSkill, SkillUpdate } from "@/types";
 
 interface UpdateState {
   pendingUpdates: SkillUpdate[];
+  skippedSkills: SkippedSkill[];
   lastChecked: string | null;
   isChecking: boolean;
   checkError: string | null;
@@ -11,6 +12,7 @@ interface UpdateState {
 
 interface UpdateActions {
   setPendingUpdates: (updates: SkillUpdate[]) => void;
+  setSkippedSkills: (skills: SkippedSkill[]) => void;
   setLastChecked: (timestamp: string | null) => void;
   setIsChecking: (checking: boolean) => void;
   setCheckError: (error: string | null) => void;
@@ -22,6 +24,7 @@ interface UpdateActions {
 export const useUpdateStore = create<UpdateState & UpdateActions>()((set) => ({
   // State
   pendingUpdates: [],
+  skippedSkills: [],
   lastChecked: null,
   isChecking: false,
   checkError: null,
@@ -29,6 +32,7 @@ export const useUpdateStore = create<UpdateState & UpdateActions>()((set) => ({
 
   // Actions
   setPendingUpdates: (pendingUpdates) => set({ pendingUpdates }),
+  setSkippedSkills: (skippedSkills) => set({ skippedSkills }),
   setLastChecked: (lastChecked) => set({ lastChecked }),
   setIsChecking: (isChecking) => set({ isChecking }),
   setCheckError: (checkError) => set({ checkError }),

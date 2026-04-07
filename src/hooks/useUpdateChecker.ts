@@ -4,7 +4,7 @@ import { checkSkillUpdates } from "@/lib/tauri";
 import { useUpdateStore } from "@/stores/updateStore";
 import { useMarketplaceStore } from "@/stores/marketplaceStore";
 import { getErrorMessage } from "@/lib/utils";
-import type { SkillUpdate } from "@/types";
+import type { SkillCheckResult } from "@/types";
 
 /**
  * Listens for background update check events and provides a manual check function.
@@ -12,10 +12,12 @@ import type { SkillUpdate } from "@/types";
 export function useUpdateChecker() {
   const {
     pendingUpdates,
+    skippedSkills,
     lastChecked,
     isChecking,
     checkError,
     setPendingUpdates,
+    setSkippedSkills,
     setLastChecked,
     setIsChecking,
     setCheckError,
@@ -25,11 +27,13 @@ export function useUpdateChecker() {
 
   // Listen for background checker results.
   useEffect(() => {
-    const unlistenUpdates = listen<SkillUpdate[]>(
+    const unlistenUpdates = listen<SkillCheckResult>(
       "skill-updates-available",
       (event) => {
-        setPendingUpdates(event.payload);
+        setPendingUpdates(event.payload.updates);
+        setSkippedSkills(event.payload.skippedSkills);
         setLastChecked(new Date().toISOString());
+        setCheckError(null);
       },
     );
 
@@ -37,19 +41,25 @@ export function useUpdateChecker() {
       setCliAvailable(false);
     });
 
+    const unlistenErrors = listen<string>("skill-update-check-error", (event) => {
+      setCheckError(event.payload);
+    });
+
     return () => {
       unlistenUpdates.then((fn) => fn());
       unlistenCli.then((fn) => fn());
+      unlistenErrors.then((fn) => fn());
     };
-  }, [setPendingUpdates, setLastChecked, setCliAvailable]);
+  }, [setPendingUpdates, setSkippedSkills, setLastChecked, setCheckError, setCliAvailable]);
 
   const checkNow = useCallback(() => {
     setIsChecking(true);
     setCheckError(null);
 
     checkSkillUpdates()
-      .then((updates) => {
-        setPendingUpdates(updates);
+      .then((result) => {
+        setPendingUpdates(result.updates);
+        setSkippedSkills(result.skippedSkills);
         setLastChecked(new Date().toISOString());
         setIsChecking(false);
       })
@@ -57,7 +67,7 @@ export function useUpdateChecker() {
         setCheckError(getErrorMessage(err));
         setIsChecking(false);
       });
-  }, [setPendingUpdates, setLastChecked, setIsChecking, setCheckError]);
+  }, [setPendingUpdates, setSkippedSkills, setLastChecked, setIsChecking, setCheckError]);
 
-  return { pendingUpdates, lastChecked, isChecking, checkError, checkNow };
+  return { pendingUpdates, skippedSkills, lastChecked, isChecking, checkError, checkNow };
 }

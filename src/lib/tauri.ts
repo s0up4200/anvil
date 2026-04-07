@@ -7,7 +7,7 @@ import type {
   MarketplaceSkill,
   LeaderboardSkill,
   SkillMetadata,
-  SkillUpdate,
+  SkillCheckResult,
   SkillDiff,
   LockfileEntry,
 } from "@/types";
@@ -142,8 +142,8 @@ export function installFromMarketplace(params: {
 }
 
 /** Check for available skill updates. */
-export function checkSkillUpdates(): Promise<SkillUpdate[]> {
-  return invoke<SkillUpdate[]>("check_skill_updates");
+export function checkSkillUpdates(): Promise<SkillCheckResult> {
+  return invoke<SkillCheckResult>("check_skill_updates");
 }
 
 /** Update a single marketplace skill. */

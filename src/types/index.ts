@@ -147,6 +147,16 @@ export interface SkillUpdate {
   installedAt: string;
 }
 
+export interface SkippedSkill {
+  skillName: string;
+  sourceRepo: string;
+}
+
+export interface SkillCheckResult {
+  updates: SkillUpdate[];
+  skippedSkills: SkippedSkill[];
+}
+
 export interface SkillDiff {
   skillName: string;
   localContent: string;

@@ -24,6 +24,20 @@ pub struct SkillUpdate {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct SkippedSkill {
+    pub skill_name: String,
+    pub source_repo: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SkillCheckResult {
+    pub updates: Vec<SkillUpdate>,
+    pub skipped_skills: Vec<SkippedSkill>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct SkillDiff {
     pub skill_name: String,
     pub local_content: String,

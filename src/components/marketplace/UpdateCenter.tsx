@@ -14,23 +14,23 @@ import { getErrorMessage } from "@/lib/utils"
 import type { SkillDiff } from "@/types"
 
 export function UpdateCenter() {
-  const { pendingUpdates, isChecking, checkNow } = useUpdateChecker()
+  const { pendingUpdates, skippedSkills, isChecking, checkError, checkNow } = useUpdateChecker()
   const { updatingSkills, markUpdating, clearUpdating, removeUpdate } =
     useUpdateStore()
 
   const [isUpdatingAll, setIsUpdatingAll] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [actionError, setActionError] = useState<string | null>(null)
   const [activeDiff, setActiveDiff] = useState<SkillDiff | null>(null)
   const [loadingDiff, setLoadingDiff] = useState<string | null>(null)
 
   async function handleUpdateOne(skillName: string) {
     markUpdating(skillName)
-    setError(null)
+    setActionError(null)
     try {
       await updateMarketplaceSkill(skillName)
       removeUpdate(skillName)
     } catch (err) {
-      setError(getErrorMessage(err))
+      setActionError(getErrorMessage(err))
     } finally {
       clearUpdating(skillName)
     }
@@ -38,13 +38,13 @@ export function UpdateCenter() {
 
   async function handleUpdateAll() {
     setIsUpdatingAll(true)
-    setError(null)
+    setActionError(null)
     try {
       await updateAllSkills()
       // Clear all pending updates after successful bulk update.
       useUpdateStore.getState().setPendingUpdates([])
     } catch (err) {
-      setError(getErrorMessage(err))
+      setActionError(getErrorMessage(err))
     } finally {
       setIsUpdatingAll(false)
     }
@@ -56,7 +56,7 @@ export function UpdateCenter() {
       const diff = await diffRemoteSkill(skillName)
       setActiveDiff(diff)
     } catch (err) {
-      setError(getErrorMessage(err))
+      setActionError(getErrorMessage(err))
     } finally {
       setLoadingDiff(null)
     }
@@ -106,19 +106,52 @@ export function UpdateCenter() {
       ) : (
         <ScrollArea className="min-h-0 flex-1">
           <div className="flex flex-col gap-3 p-4">
-            {error && (
+            {checkError && (
               <div className="flex items-center gap-2">
-                <p className="text-xs text-destructive">{error}</p>
-                <Button variant="outline" size="xs" onClick={() => { setError(null); void checkNow() }}>
+                <p className="text-xs text-destructive">{checkError}</p>
+                <Button variant="outline" size="xs" onClick={() => void checkNow()}>
                   Retry
                 </Button>
               </div>
             )}
 
-            {pendingUpdates.length === 0 && !isChecking && (
+            {actionError && (
+              <div className="flex items-center gap-2">
+                <p className="text-xs text-destructive">{actionError}</p>
+                <Button variant="outline" size="xs" onClick={() => setActionError(null)}>
+                  Dismiss
+                </Button>
+              </div>
+            )}
+
+            {skippedSkills.length > 0 && (
+              <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3">
+                <p className="text-xs font-medium text-amber-200">
+                  Some marketplace skills could not be checked
+                </p>
+                <div className="mt-2 flex flex-col gap-1">
+                  {skippedSkills.map((skill) => (
+                    <p key={skill.skillName} className="text-xs text-amber-100/90">
+                      {skill.skillName}
+                      {skill.sourceRepo ? ` (${skill.sourceRepo})` : ""}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {pendingUpdates.length === 0 && skippedSkills.length === 0 && !isChecking && !checkError && (
               <div className="flex flex-col gap-2 p-6">
                 <p className="text-sm text-muted-foreground">
                   All skills are up to date
+                </p>
+              </div>
+            )}
+
+            {pendingUpdates.length === 0 && skippedSkills.length > 0 && !isChecking && !checkError && (
+              <div className="flex flex-col gap-2 p-6 pt-2">
+                <p className="text-sm text-muted-foreground">
+                  No updates found for the skills that were checked
                 </p>
               </div>
             )}
