@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import Markdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import rehypeHighlight from "rehype-highlight"
@@ -10,6 +10,7 @@ import { useSkillStore } from "@/stores/skillStore"
 import { useUIStore } from "@/stores/uiStore"
 import { getSkill, updateSkill } from "@/lib/tauri"
 import { getErrorMessage, resolveTheme } from "@/lib/utils"
+import { LinkedFileDialog } from "@/components/skills/LinkedFileDialog"
 import type { SkillFrontmatter } from "@/types"
 
 export function SkillDetail() {
@@ -28,6 +29,7 @@ export function SkillDetail() {
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [mode, setMode] = useState<"preview" | "edit">("preview")
+  const [linkedFile, setLinkedFile] = useState<string | null>(null)
 
   // Fetch full content whenever selection changes
   useEffect(() => {
@@ -113,6 +115,63 @@ export function SkillDetail() {
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
   }, [handleSave])
+
+  const markdownComponents = useMemo(
+    () => ({
+      a: ({
+        href,
+        children,
+        ...props
+      }: React.ComponentPropsWithoutRef<"a"> & { href?: string }) => {
+        if (!href || href.startsWith("http://") || href.startsWith("https://")) {
+          return (
+            <a href={href} {...props}>
+              {children}
+            </a>
+          )
+        }
+
+        if (href.startsWith("#")) {
+          return (
+            <span className="text-muted-foreground" {...props}>
+              {children}
+            </span>
+          )
+        }
+
+        // Strip fragment and decode for the IPC call
+        const cleanHref = decodeURIComponent(href.split("#")[0])
+
+        if (cleanHref.endsWith(".md")) {
+          return (
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                setLinkedFile(cleanHref)
+              }}
+              className="cursor-pointer"
+              {...props}
+            >
+              {children}
+            </a>
+          )
+        }
+
+        return (
+          <span
+            className="underline decoration-dotted text-muted-foreground cursor-not-allowed"
+            title={`Cannot open: ${href}`}
+            {...props}
+          >
+            {children}
+          </span>
+        )
+      },
+    }),
+    [],
+  )
 
   if (!selectedSkill) {
     return (
@@ -206,7 +265,7 @@ export function SkillDetail() {
         /* Rendered markdown preview */
         <div className="flex-1 overflow-auto p-4">
           <div className="prose dark:prose-invert prose-sm max-w-none">
-            <Markdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>{body}</Markdown>
+            <Markdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]} components={markdownComponents}>{body}</Markdown>
           </div>
         </div>
       ) : (
@@ -227,6 +286,15 @@ export function SkillDetail() {
           </div>
         </div>
       )}
+
+      <LinkedFileDialog
+        skillPath={selectedSkill.path}
+        relativeLink={linkedFile}
+        open={linkedFile !== null}
+        onOpenChange={(open) => {
+          if (!open) setLinkedFile(null)
+        }}
+      />
     </div>
   )
 }

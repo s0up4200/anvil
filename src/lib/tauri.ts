@@ -94,6 +94,14 @@ export function installSkillToAgent(params: {
   return invoke<void>("install_skill_to_agent", params);
 }
 
+/** Read a markdown file referenced by a relative link inside a skill. */
+export function readRelativeMd(params: {
+  skillPath: string;
+  relativeLink: string;
+}): Promise<string> {
+  return invoke<string>("read_relative_md", params);
+}
+
 // ---------------------------------------------------------------------------
 // File watcher commands
 // ---------------------------------------------------------------------------

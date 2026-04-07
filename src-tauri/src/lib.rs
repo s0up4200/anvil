@@ -23,6 +23,7 @@ pub fn run() {
             commands::skills::duplicate_skill,
             commands::skills::toggle_skill,
             commands::skills::install_skill_to_agent,
+            commands::skills::read_relative_md,
             commands::marketplace::search_marketplace,
             commands::marketplace::install_from_marketplace,
             commands::marketplace::check_skill_updates,

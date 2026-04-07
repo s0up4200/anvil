@@ -267,3 +267,35 @@ pub fn install_skill_to_agent(
         ))),
     }
 }
+
+/// Read a markdown file referenced by a relative link inside a skill.
+///
+/// The resolved path must end in `.md` and stay within the skill's directory
+/// tree after canonicalization (path-traversal protection).
+#[tauri::command]
+pub fn read_relative_md(skill_path: String, relative_link: String) -> Result<String, AppError> {
+    if !relative_link.ends_with(".md") {
+        return Err(AppError::InvalidInput(
+            "only .md files can be opened".to_string(),
+        ));
+    }
+
+    let skill_dir = skill_dir(Path::new(&skill_path));
+
+    let candidate = skill_dir.join(&relative_link);
+    let resolved = candidate
+        .canonicalize()
+        .map_err(|_| AppError::NotFound(format!("file not found: {relative_link}")))?;
+
+    let root = skill_dir
+        .canonicalize()
+        .map_err(|e| AppError::Path(format!("cannot resolve skill directory: {e}")))?;
+
+    if !resolved.starts_with(&root) {
+        return Err(AppError::Path(
+            "relative link escapes the skill directory".to_string(),
+        ));
+    }
+
+    fs::read_to_string(&resolved).map_err(AppError::from)
+}
