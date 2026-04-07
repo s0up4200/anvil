@@ -55,6 +55,14 @@ bun run tauri dev
 bun run tauri build
 ```
 
+### Unsigned macOS release
+
+If macOS blocks the app after you move it to `/Applications`, clear the quarantine flag:
+
+```bash
+xattr -dr com.apple.quarantine /Applications/Anvil.app
+```
+
 ## Keyboard shortcuts
 
 | Shortcut | Action |

@@ -233,6 +233,30 @@
       opacity: 0.8;
     }
 
+    .install-note {
+      display: flex;
+      justify-content: center;
+      margin: 2px auto 16px;
+    }
+
+    .install-note pre {
+      display: inline-block;
+      max-width: min(100%, 30rem);
+      overflow-x: auto;
+      padding: 0;
+      border: none;
+      border-radius: 0;
+      background: transparent;
+      color: color-mix(in oklch, var(--muted) 88%, var(--fg));
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
+      font-size: 11px;
+      line-height: 1.35;
+      text-align: center;
+      letter-spacing: -0.01em;
+      opacity: 0.86;
+      box-shadow: none;
+    }
+
     /* ============================================================
        BUTTONS
        ============================================================ */
@@ -366,6 +390,7 @@
     .hero h1,
     .hero-sub,
     .hero-actions,
+    .install-note,
     .platform-note,
     .screenshot-section {
       animation: fadeUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
@@ -374,7 +399,8 @@
     .hero h1 { animation-delay: 0.05s; }
     .hero-sub { animation-delay: 0.12s; }
     .hero-actions { animation-delay: 0.19s; }
-    .platform-note { animation-delay: 0.24s; }
+    .install-note { animation-delay: 0.24s; }
+    .platform-note { animation-delay: 0.28s; }
     .screenshot-section { animation-delay: 0.32s; }
 
     /* ============================================================
@@ -526,6 +552,15 @@
         justify-content: center;
       }
 
+      .install-note {
+        margin-bottom: 14px;
+      }
+
+      .install-note pre {
+        max-width: 100%;
+        font-size: 10px;
+      }
+
       .screenshot-frame {
         margin: 0 -8px;
       }
@@ -603,6 +638,9 @@
         <a href="https://github.com/s0up4200/anvil" class="btn btn-secondary" target="_blank" rel="noopener">
           View on GitHub
         </a>
+      </div>
+      <div class="install-note">
+        <pre><code>xattr -dr com.apple.quarantine /Applications/Anvil.app</code></pre>
       </div>
       <p class="platform-note">macOS 12+ &middot; Apple Silicon &amp; Intel</p>
     </section>
@@ -694,6 +732,9 @@
         <a href="https://github.com/s0up4200/anvil" class="btn btn-secondary" target="_blank" rel="noopener">
           View on GitHub
         </a>
+      </div>
+      <div class="install-note">
+        <pre><code>xattr -dr com.apple.quarantine /Applications/Anvil.app</code></pre>
       </div>
     </section>
 
