@@ -119,7 +119,8 @@
       position: fixed;
       top: 0; left: 0; right: 0;
       z-index: 100;
-      height: var(--nav-height);
+      height: calc(var(--nav-height) + env(safe-area-inset-top));
+      padding-top: env(safe-area-inset-top);
       background: var(--nav-bg);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
@@ -201,7 +202,7 @@
        HERO
        ============================================================ */
     .hero {
-      padding-top: calc(var(--nav-height) + 80px);
+      padding-top: calc(var(--nav-height) + env(safe-area-inset-top) + 80px);
       text-align: center;
     }
 
@@ -555,7 +556,7 @@
        RESPONSIVE
        ============================================================ */
     @media (max-width: 768px) {
-      .hero { padding-top: calc(var(--nav-height) + 56px); }
+      .hero { padding-top: calc(var(--nav-height) + env(safe-area-inset-top) + 56px); }
 
       .hero-actions {
         flex-direction: column;
