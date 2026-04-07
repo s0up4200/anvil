@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="logo.png" alt="Anvil" width="128" height="128">
+  <img src="docs/assets/logo.png" alt="Anvil" width="128" height="128">
 </p>
 
 <h1 align="center">Anvil</h1>

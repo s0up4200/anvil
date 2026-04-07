@@ -28,3 +28,6 @@ src-tauri/target/
 src-tauri/gen/
 src-tauri/Cargo.lock
 skills-lock.json
+
+# Local specs
+docs/specs/skill-forge-spec.md
